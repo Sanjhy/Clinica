@@ -65,6 +65,11 @@ public class Paciente {
     @JoinColumn(name = "cod_registrado_por")
     private Usuario registradoPor;
 
+    // Médico asignado por la enfermera al momento de la admisión/triaje
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cod_medico_asignado")
+    private Usuario medicoAsignado;
+
     @Column(nullable = false)
     @Builder.Default
     private Boolean activo = true;

@@ -37,6 +37,9 @@ public class Usuario {
     @Column(length = 20)
     private String colegiatura;
 
+    @Column(length = 15)
+    private String telefono;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "cod_rol")
     private Rol rol;

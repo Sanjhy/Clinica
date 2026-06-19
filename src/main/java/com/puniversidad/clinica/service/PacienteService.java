@@ -74,6 +74,18 @@ public class PacienteService {
                 .collect(Collectors.toList());
     }
 
+    /** Si es médico, devuelve solo SUS pacientes asignados. Si es admin/enfermera, devuelve todos. */
+    @Transactional(readOnly = true)
+    public List<PacienteResponse> listarSegunRol(String dniLogueado, boolean esMedico) {
+        if (esMedico) {
+            return pacienteRepository.findByMedicoAsignadoDniAndActivoTrue(dniLogueado)
+                    .stream()
+                    .map(pacienteMapper::toResponse)
+                    .collect(Collectors.toList());
+        }
+        return listarPacientesActivos();
+    }
+
     @Transactional(readOnly = true)
     public PacienteResponse buscarPorDni(String dni) {
         Paciente paciente = pacienteRepository.findByDni(dni)

@@ -16,4 +16,10 @@ public interface PacienteRepository extends JpaRepository<Paciente, Long> {
 
     // Verificar si ya existe un DNI registrado
     boolean existsByDni(String dni);
+
+    // Listar pacientes activos asignados a un médico específico (por DNI del médico)
+    List<Paciente> findByMedicoAsignadoDniAndActivoTrue(String dniMedico);
+
+    // Listar pacientes activos asignados a un médico por su cod_usuario
+    List<Paciente> findByMedicoAsignadoCodUsuarioAndActivoTrue(Long codMedico);
 }
