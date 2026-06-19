@@ -1,0 +1,135 @@
+.loginContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f7f6f2;
+    padding: 1.5rem;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+.loginCard {
+    background: #ffffff;
+    padding: 2.5rem 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    border: 1px solid #eae9e4;
+}
+
+.iconWrapper {
+    background-color: #e6f7f0;
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 1.25rem auto;
+}
+
+.iconWrapper svg {
+    color: #10b981;
+}
+
+.title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111111;
+    margin: 0 0 0.25rem 0;
+}
+
+.subtitle {
+    font-size: 0.875rem;
+    color: #666666;
+    margin: 0 0 2rem 0;
+}
+
+.formGroup {
+    text-align: left;
+    margin-bottom: 1.25rem;
+}
+
+.label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #444444;
+    margin-bottom: 0.5rem;
+}
+
+.input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #dcdbd6;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: #111111;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+    background-color: #ffffff;
+}
+
+.input:focus {
+    outline: none;
+    border-color: #04432e;
+}
+
+.submitBtn {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #ffffff;
+    border: 1px solid #dcdbd6;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #111111;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+    margin-top: 1.75rem;
+}
+
+.submitBtn:hover:not(:disabled) {
+    background-color: #fcfbf7;
+    border-color: #111111;
+}
+
+.submitBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.errorMessage {
+    background-color: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    margin-bottom: 1.25rem;
+    text-align: left;
+}
+
+.footerText {
+    font-size: 0.75rem;
+    color: #888888;
+    margin-top: 2rem;
+}
+
+@media (max-width: 480px) {
+    .loginCard {
+        padding: 2rem 1rem;
+        box-shadow: none;
+        border: none;
+        background: transparent;
+    }
+    .loginContainer {
+        background-color: #ffffff;
+    }
+}

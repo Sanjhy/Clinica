@@ -1,0 +1,11 @@
+.contenedorPadre {
+    display: block;
+    min-height: 100vh;
+    background-color: #f8fafc; /* Gris azulado clínico muy limpio */
+}
+
+.areaContenido {
+    display: block;
+    padding: 1.5rem;
+    box-sizing: border-box;
+}

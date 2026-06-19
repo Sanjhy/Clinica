@@ -1,0 +1,135 @@
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 0 1.5rem;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    gap: 1rem;
+}
+
+.leftSection {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.hamburgerBtn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #374151;
+    padding: 0.4rem;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+
+.hamburgerBtn:hover {
+    background: #f3f4f6;
+}
+
+.clinicaTitle {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #033323;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.redStatus {
+    font-size: 0.75rem;
+    color: #16a34a;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+    .redStatus { display: none; }
+    .clinicaTitle { font-size: 0.9rem; }
+}
+
+.rightSection {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+}
+
+.badgeMedico {
+    font-size: 0.75rem;
+    background: #ecfdf5;
+    color: #065f46;
+    padding: 0.25rem 0.65rem;
+    border-radius: 20px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+    .badgeMedico { display: none; }
+}
+
+.medicoName {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #033323;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 160px;
+    padding: 0.3rem 0.5rem;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.medicoName:hover {
+    background: #f0fdf4;
+    text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+    .medicoName { max-width: 100px; font-size: 0.8rem; }
+}
+
+.salirBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+    padding: 0.4rem 0.85rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: background 0.2s;
+    white-space: nowrap;
+}
+
+.salirBtn:hover {
+    background: #fee2e2;
+}
+
+.salirTexto {
+    display: inline;
+}
+
+@media (max-width: 420px) {
+    .salirTexto { display: none; }
+    .salirBtn { padding: 0.4rem; }
+}

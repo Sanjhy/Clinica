@@ -1,0 +1,67 @@
+.dashboardGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+}
+
+.cardMetrica {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 1.25rem;
+    border: 1px solid #e5e5e0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.01);
+}
+
+.cardMetrica h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.85rem;
+    color: #666666;
+    text-transform: uppercase;
+}
+
+.cardMetrica p {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+/* Bloque inferior de dos columnas */
+.seccionInformativa {
+    display: grid;
+    grid-template-columns: 1.6fr 1.4fr;
+    gap: 1.5rem;
+}
+
+.panelBlanco {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 1.5rem;
+    border: 1px solid #e5e5e0;
+}
+
+.tablaClinica {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+.tablaClinica th {
+    padding: 0.75rem;
+    border-bottom: 2px solid #eaeaea;
+    color: #666666;
+    font-weight: 600;
+}
+
+.tablaClinica td {
+    padding: 0.85rem 0.75rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+/* RESPONSIVE DASHBOARD */
+@media (max-width: 992px) {
+    .seccionInformativa {
+        grid-template-columns: 1fr; /* Pasa a una sola columna en pantallas medianas/chicas */
+    }
+}

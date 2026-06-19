@@ -1,0 +1,45 @@
+.layoutContainer {
+    display: flex;
+    min-height: 100vh;
+    width: 100vw;
+    overflow-x: hidden;
+    background-color: #f4f3ee;
+}
+
+/* Contenedor derecho que envuelve al Navbar y a las Páginas Dinámicas */
+.wrapperDerecho {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0; /* Previene el desborde de tablas responsive */
+    transition: margin-left 0.3s ease;
+}
+
+/* Área interna donde se renderiza el Dashboard, Citas, etc. */
+.contenidoDinamico {
+    flex: 1;
+    padding: 1.5rem;
+    box-sizing: border-box;
+}
+
+/* ==========================================
+   MEDIA QUERIES - RESPONSIVE DESIGN STRICTOR
+   ========================================== */
+
+/* Pantallas Medianas y Grandes (Escritorio de la clínica) */
+@media (min-width: 769px) {
+    .contenidoDinamico {
+        padding: 2rem;
+    }
+}
+
+/* Pantallas Pequeñas (Celulares y Tablets en red LAN - Max width 768px) */
+@media (max-width: 768px) {
+    .layoutContainer {
+        flex-direction: column; /* Colapsa en fila vertical si es necesario */
+    }
+
+    .contenidoDinamico {
+        padding: 1rem; /* Reducción de espacio para maximizar la pantalla del celular */
+    }
+}

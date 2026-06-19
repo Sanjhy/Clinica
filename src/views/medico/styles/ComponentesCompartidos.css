@@ -1,0 +1,60 @@
+/* Variables de entorno de color según tus diseños */
+:root {
+    --color-institucional: #033323;       /* Verde oscuro de la barra y sidebar */
+    --color-institucional-light: #054731; /* Resaltado de menú activo */
+    --color-fondo: #f4f3ee;               /* Fondo gris/crema suave de las pantallas */
+    --color-texto-principal: #1a1a1a;
+    --color-texto-secundario: #555555;
+    
+    /* Estados Clínicos */
+    --bg-urgente: #fef2f2;
+    --text-urgente: #dc2626;
+    --bg-normal: #f0fdf4;
+    --text-green: #16a34a;
+    --bg-espera: #fffbeb;
+    --text-espera: #d97706;
+}
+
+/* Reseteo básico para que el layout ocupe el 100% sin márgenes fantasmas */
+.medicoBodyReset {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    background-color: var(--color-fondo);
+    color: var(--color-texto-principal);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+/* Clases de utilidad para los Badges de Estado (Imágenes 2, 3 y 6) */
+.badgeUrgente {
+    background-color: var(--bg-urgente);
+    color: var(--text-urgente);
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    border: 1px solid #fca5a5;
+}
+
+.badgeNormal {
+    background-color: var(--bg-normal);
+    color: var(--text-green);
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    border: 1px solid #bbf7d0;
+}
+
+.badgeEnCurso {
+    background-color: #eff6ff;
+    color: #2563eb;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    border: 1px solid #bfdbfe;
+}

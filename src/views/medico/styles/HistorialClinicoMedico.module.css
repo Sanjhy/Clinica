@@ -1,0 +1,62 @@
+.evolucionContainer {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 2rem;
+    border: 1px solid #e5e5e0;
+}
+
+.subSeccion {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #f0f0fe;
+}
+
+.subSeccion h3 {
+    font-size: 1rem;
+    color: #033323;
+    margin-top: 0;
+    margin-bottom: 1rem;
+    border-left: 3px solid #10b981;
+    padding-left: 0.5rem;
+}
+
+.textareaClinico {
+    width: 100%;
+    min-height: 120px;
+    border: 1px solid #dcdbd6;
+    border-radius: 6px;
+    padding: 0.75rem;
+    font-family: inherit;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+    resize: vertical;
+}
+
+.gridCamposForm {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+}
+
+.campoForm {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.inputClinico {
+    padding: 0.65rem 0.75rem;
+    border: 1px solid #dcdbd6;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+/* RESPONSIVE HISTORIAL */
+@media (max-width: 768px) {
+    .gridCamposForm {
+        grid-template-columns: 1fr;
+    }
+    .evolucionContainer {
+        padding: 1.25rem;
+    }
+}

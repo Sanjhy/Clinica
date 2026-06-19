@@ -1,0 +1,51 @@
+.tablaAnchaWrapper {
+    width: 100%;
+    overflow-x: auto; /* Permite scroll horizontal fluido solo en la tabla si se abre en celular */
+    background: #ffffff;
+    border-radius: 10px;
+    border: 1px solid #e5e5e0;
+}
+
+.itemCitaReceta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    background: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #e5e5e0;
+    margin-bottom: 0.75rem;
+    transition: background-color 0.15s;
+}
+
+.itemCitaReceta:hover {
+    background-color: #fcfbf7;
+}
+
+/* Fila de alertas de Notificaciones (Imagen 9) */
+.notificacionCard {
+    background: #ffffff;
+    border-left: 4px solid #666666;
+    padding: 1.25rem;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 1rem;
+    border-top: 1px solid #e5e5e0;
+    border-right: 1px solid #e5e5e0;
+    border-bottom: 1px solid #e5e5e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.notificacionCritica {
+    border-left-color: #dc2626; /* Cambia a rojo si es urgencia clínica */
+}
+
+/* RESPONSIVE DE COMPLEMENTOS */
+@media (max-width: 600px) {
+    .itemCitaReceta, .notificacionCard {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+}
