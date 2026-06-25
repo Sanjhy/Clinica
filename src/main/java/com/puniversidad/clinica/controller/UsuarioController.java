@@ -3,9 +3,13 @@ package com.puniversidad.clinica.controller;
 import com.puniversidad.clinica.DTO.seguridad.request.CambiarPasswordRequest;
 import com.puniversidad.clinica.DTO.seguridad.request.PerfilUpdateRequest;
 import com.puniversidad.clinica.DTO.seguridad.response.PerfilResponse;
+import com.puniversidad.clinica.DTO.seguridad.request.RegistroUsuarioRequest;
+import com.puniversidad.clinica.model.entity.Rol;
 import com.puniversidad.clinica.model.entity.Usuario;
+import com.puniversidad.clinica.repository.RolRepository;
 import com.puniversidad.clinica.repository.UsuarioRepository;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,10 +27,12 @@ import java.util.stream.Collectors;
 public class UsuarioController {
 
     private final UsuarioRepository usuarioRepository;
+    private final RolRepository rolRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UsuarioController(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
+    public UsuarioController(UsuarioRepository usuarioRepository, RolRepository rolRepository, PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
+        this.rolRepository = rolRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -48,6 +54,7 @@ public class UsuarioController {
                 .email(u.getEmail())
                 .colegiatura(u.getColegiatura())
                 .telefono(u.getTelefono())
+                .especialidad(u.getEspecialidad())
                 .rolNombre(u.getRol() != null ? u.getRol().getNombre() : "")
                 .build());
     }
@@ -74,6 +81,8 @@ public class UsuarioController {
             u.setColegiatura(request.getColegiatura());
         if (request.getTelefono() != null)
             u.setTelefono(request.getTelefono());
+        if (request.getEspecialidad() != null)
+            u.setEspecialidad(request.getEspecialidad());
 
         usuarioRepository.save(u);
 
@@ -86,6 +95,7 @@ public class UsuarioController {
                 .email(u.getEmail())
                 .colegiatura(u.getColegiatura())
                 .telefono(u.getTelefono())
+                .especialidad(u.getEspecialidad())
                 .rolNombre(u.getRol() != null ? u.getRol().getNombre() : "")
                 .build());
     }
@@ -134,9 +144,162 @@ public class UsuarioController {
                         .apellidos(u.getApellidos())
                         .nombreCompleto(u.getNombre() + " " + u.getApellidos())
                         .colegiatura(u.getColegiatura())
+                        .especialidad(u.getEspecialidad())
                         .rolNombre("MEDICO")
                         .build())
                 .collect(Collectors.toList());
         return ResponseEntity.ok(medicos);
+    }
+
+    /**
+     * GET /api/usuarios/enfermeras
+     * Retorna la lista de enfermeras activas.
+     */
+    @GetMapping("/enfermeras")
+    @PreAuthorize("hasAnyRole('ENFERMERA', 'ADMINISTRATIVO', 'MEDICO')")
+    public ResponseEntity<List<PerfilResponse>> listarEnfermerasActivas() {
+        List<PerfilResponse> enfermeras = usuarioRepository
+                .findByRolNombreAndActivoTrue("ENFERMERA")
+                .stream()
+                .map(u -> PerfilResponse.builder()
+                        .codUsuario(u.getCodUsuario())
+                        .dni(u.getDni())
+                        .nombre(u.getNombre())
+                        .apellidos(u.getApellidos())
+                        .nombreCompleto(u.getNombre() + " " + u.getApellidos())
+                        .rolNombre("ENFERMERA")
+                        .activo(u.getActivo())
+                        .build())
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(enfermeras);
+    }
+
+    /**
+     * GET /api/usuarios/administrativos
+     * Retorna la lista de administrativos activos.
+     */
+    @GetMapping("/administrativos")
+    @PreAuthorize("hasAnyRole('ENFERMERA', 'ADMINISTRATIVO', 'MEDICO')")
+    public ResponseEntity<List<PerfilResponse>> listarAdministrativosActivos() {
+        List<PerfilResponse> admins = usuarioRepository
+                .findByRolNombreAndActivoTrue("ADMINISTRATIVO")
+                .stream()
+                .map(u -> PerfilResponse.builder()
+                        .codUsuario(u.getCodUsuario())
+                        .dni(u.getDni())
+                        .nombre(u.getNombre())
+                        .apellidos(u.getApellidos())
+                        .nombreCompleto(u.getNombre() + " " + u.getApellidos())
+                        .rolNombre("ADMINISTRATIVO")
+                        .activo(u.getActivo())
+                        .build())
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(admins);
+    }
+
+    /**
+     * POST /api/usuarios/registro
+     * Endpoint exclusivo para ADMINISTRADOR para registrar a un nuevo trabajador.
+     */
+    @PostMapping("/registro")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'ADMINISTRATIVO')")
+    public ResponseEntity<PerfilResponse> registrarUsuario(@Valid @RequestBody RegistroUsuarioRequest request) {
+        if (usuarioRepository.findByDni(request.getDni()).isPresent()) {
+            throw new RuntimeException("El DNI ya se encuentra registrado.");
+        }
+
+        Rol rol = rolRepository.findByNombre(request.getRolNombre())
+                .orElseThrow(() -> new RuntimeException("Rol no encontrado."));
+
+        Usuario u = Usuario.builder()
+                .dni(request.getDni())
+                .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .nombre(request.getNombre())
+                .apellidos(request.getApellidos())
+                .email(request.getEmail())
+                .telefono(request.getTelefono())
+                .colegiatura(request.getColegiatura())
+                .especialidad(request.getEspecialidad())
+                .rol(rol)
+                .activo(true)
+                .build();
+
+        usuarioRepository.save(u);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(PerfilResponse.builder()
+                .codUsuario(u.getCodUsuario())
+                .dni(u.getDni())
+                .nombre(u.getNombre())
+                .apellidos(u.getApellidos())
+                .nombreCompleto(u.getNombre() + " " + u.getApellidos())
+                .email(u.getEmail())
+                .colegiatura(u.getColegiatura())
+                .telefono(u.getTelefono())
+                .especialidad(u.getEspecialidad())
+                .rolNombre(rol.getNombre())
+                .activo(u.getActivo())
+                .build());
+    }
+
+    /**
+     * GET /api/usuarios/todos
+     * Retorna a TODOS los trabajadores (incluso inactivos) para la gestión del Administrador.
+     */
+    @GetMapping("/todos")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'ADMINISTRATIVO')")
+    public ResponseEntity<List<PerfilResponse>> listarTodos() {
+        List<PerfilResponse> todos = usuarioRepository.findAll()
+                .stream()
+                .map(u -> PerfilResponse.builder()
+                        .codUsuario(u.getCodUsuario())
+                        .dni(u.getDni())
+                        .nombre(u.getNombre())
+                        .apellidos(u.getApellidos())
+                        .nombreCompleto(u.getNombre() + " " + u.getApellidos())
+                        .email(u.getEmail())
+                        .colegiatura(u.getColegiatura())
+                        .telefono(u.getTelefono())
+                        .especialidad(u.getEspecialidad())
+                        .rolNombre(u.getRol() != null ? u.getRol().getNombre() : "")
+                        .activo(u.getActivo())
+                        .build())
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(todos);
+    }
+
+    /**
+     * PUT /api/usuarios/{id}
+     * Edita los datos del usuario.
+     */
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'ADMINISTRATIVO')")
+    public ResponseEntity<?> actualizarUsuario(@PathVariable Long id, @RequestBody RegistroUsuarioRequest request) {
+        Usuario u = usuarioRepository.findById(id).orElseThrow(() -> new RuntimeException("No encontrado"));
+        u.setNombre(request.getNombre());
+        u.setApellidos(request.getApellidos());
+        u.setTelefono(request.getTelefono());
+        u.setEmail(request.getEmail());
+        u.setEspecialidad(request.getEspecialidad());
+        u.setColegiatura(request.getColegiatura());
+        
+        if (request.getPassword() != null && !request.getPassword().isEmpty()) {
+            u.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        }
+        
+        usuarioRepository.save(u);
+        return ResponseEntity.ok("Usuario actualizado");
+    }
+
+    /**
+     * PUT /api/usuarios/{id}/estado
+     * Suspender o reactivar
+     */
+    @PutMapping("/{id}/estado")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'ADMINISTRATIVO')")
+    public ResponseEntity<?> cambiarEstadoUsuario(@PathVariable Long id) {
+        Usuario u = usuarioRepository.findById(id).orElseThrow(() -> new RuntimeException("No encontrado"));
+        u.setActivo(!u.getActivo());
+        usuarioRepository.save(u);
+        return ResponseEntity.ok("Estado actualizado: " + u.getActivo());
     }
 }

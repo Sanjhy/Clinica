@@ -49,14 +49,32 @@ public class AuthService {
 
     @Transactional
     public AuthResponse login(LoginRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
-        );
-
-        // 2. Buscar por DNI
+        // 1. Buscar por DNI primero para validar bloqueos
         Usuario usuario = usuarioRepository.findByDni(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado."));
 
+        if (usuario.getBloqueadoHasta() != null && usuario.getBloqueadoHasta().isAfter(LocalDateTime.now())) {
+            throw new RuntimeException("Demasiados intentos fallidos. Intente nuevamente en 15 minutos.");
+        }
+
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+            );
+        } catch (org.springframework.security.authentication.BadCredentialsException e) {
+            usuario.setIntentosFallidos(usuario.getIntentosFallidos() + 1);
+            if (usuario.getIntentosFallidos() >= 3) {
+                usuario.setBloqueadoHasta(LocalDateTime.now().plusMinutes(15));
+                usuarioRepository.save(usuario);
+                throw new RuntimeException("Demasiados intentos fallidos. Intente nuevamente en 15 minutos.");
+            }
+            usuarioRepository.save(usuario);
+            throw new RuntimeException("Credenciales inválidas.");
+        }
+
+        // 3. Éxito: limpiar bloqueos y actualizar acceso
+        usuario.setIntentosFallidos(0);
+        usuario.setBloqueadoHasta(null);
         usuario.setUltimoAcceso(LocalDateTime.now());
         usuarioRepository.save(usuario);
 

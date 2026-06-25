@@ -19,4 +19,7 @@ public class PerfilUpdateRequest {
 
     @Size(max = 15)
     private String telefono;
+
+    @Size(max = 100)
+    private String especialidad;
 }

@@ -40,6 +40,9 @@ public class Usuario {
     @Column(length = 15)
     private String telefono;
 
+    @Column(length = 100)
+    private String especialidad;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "cod_rol")
     private Rol rol;
@@ -53,4 +56,14 @@ public class Usuario {
 
     @Column(name = "ip_ultimo_acceso", length = 45)
     private String ipUltimoAcceso;
+
+    @Column(name = "intentos_fallidos")
+    @Builder.Default
+    private Integer intentosFallidos = 0;
+
+    @Column(name = "bloqueado_hasta")
+    private LocalDateTime bloqueadoHasta;
+
+    @Column(name = "secreto_2fa", length = 6)
+    private String secreto2fa;
 }

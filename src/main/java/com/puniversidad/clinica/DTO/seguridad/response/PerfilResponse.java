@@ -18,5 +18,7 @@ public class PerfilResponse {
     private String email;
     private String colegiatura;
     private String telefono;
+    private String especialidad;
     private String rolNombre;
+    private Boolean activo;
 }

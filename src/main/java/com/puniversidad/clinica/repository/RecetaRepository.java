@@ -8,4 +8,7 @@ import java.util.List;
 @Repository
 public interface RecetaRepository extends JpaRepository<Receta, Long> {
     List<Receta> findByConsultaCodConsulta(Long codConsulta);
+    
+    // Obtener todas las recetas emitidas por un médico
+    List<Receta> findByMedicoDniOrderByFechaEmisionDesc(String dni);
 }

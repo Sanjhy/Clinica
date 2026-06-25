@@ -41,7 +41,7 @@ public class PacienteController {
      * NOTA: hasRole('X') equivale a hasAuthority('ROLE_X') automáticamente.
      */
     @PostMapping
-    @PreAuthorize("hasRole('ADMINISTRATIVO')")
+    @PreAuthorize("hasAnyRole('ADMINISTRATIVO', 'ENFERMERA')")
     public ResponseEntity<PacienteResponse> registrar(@Valid @RequestBody PacienteRequest request,
                                                       @AuthenticationPrincipal UserDetails userDetails) {
         PacienteResponse response = pacienteService.registrarPaciente(request, userDetails.getUsername());

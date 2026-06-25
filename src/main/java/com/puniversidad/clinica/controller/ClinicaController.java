@@ -46,10 +46,11 @@ public class ClinicaController {
     /** POST /api/clinica/triajes — Registra signos vitales. Solo ENFERMERA. */
     @PostMapping("/triajes")
     @PreAuthorize("hasRole('ENFERMERA')")
-    public ResponseEntity<Triaje> registrarTriaje(@Valid @RequestBody Triaje triaje,
+    public ResponseEntity<?> registrarTriaje(@Valid @RequestBody Triaje triaje,
                                                   @AuthenticationPrincipal UserDetails userDetails) {
+        Triaje guardado = clinicaService.registrarTriaje(triaje, userDetails.getUsername());
         return new ResponseEntity<>(
-                clinicaService.registrarTriaje(triaje, userDetails.getUsername()),
+                Map.of("codTriaje", guardado.getCodTriaje(), "mensaje", "Triaje guardado exitosamente"),
                 HttpStatus.CREATED
         );
     }

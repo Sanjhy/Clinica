@@ -13,4 +13,7 @@ public interface CitaRepository extends JpaRepository<Cita, Long> {
     
     // Listar citas por médico y estado
     List<Cita> findByMedicoCodUsuarioAndEstado(Long codMedico, String estado);
+
+    // Listar citas de un médico (ordenadas por fecha) usando el DNI
+    List<Cita> findByMedicoDniOrderByFechaHoraAsc(String dni);
 }

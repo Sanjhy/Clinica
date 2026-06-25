@@ -18,9 +18,15 @@ public class Notificacion {
     @Column(name = "cod_notificacion")
     private Long codNotificacion;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "rol", "passwordHash"})
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "cod_usuario", nullable = false)
-    private Usuario usuario;
+    private Usuario usuario; // Receptor
+
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "rol", "passwordHash"})
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "emisor_id", nullable = true)
+    private Usuario emisor; // Remitente
 
     @Column(nullable = false, length = 30)
     private String tipo; // URGENCIA_CLINICA | TRIAJE_PENDIENTE etc.
