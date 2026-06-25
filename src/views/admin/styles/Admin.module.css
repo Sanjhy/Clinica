@@ -1,0 +1,150 @@
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.title {
+    margin: 0;
+    font-size: clamp(1.4rem, 3vw, 1.85rem);
+    color: #0f172a;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.subtitle {
+    margin: 0.25rem 0 0;
+    color: #64748b;
+    font-size: 0.95rem;
+}
+
+.btnPrimary {
+    background: #6366f1; /* Devias primary blue/indigo */
+    color: #ffffff;
+    border: none;
+    padding: 0.65rem 1.35rem;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+}
+.btnPrimary:hover {
+    background: #4f46e5;
+    box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2);
+}
+
+.card {
+    background: #ffffff;
+    padding: 1.5rem;
+    border-radius: 20px;
+    border: none; /* Devias typically has no borders, just soft shadow */
+    box-shadow: 0px 5px 22px rgba(145, 158, 171, 0.08);
+    transition: box-shadow 0.2s ease;
+}
+
+.card:hover {
+    box-shadow: 0px 12px 28px rgba(145, 158, 171, 0.12);
+}
+
+.tableContainer {
+    background: #ffffff;
+    border-radius: 20px;
+    border: none;
+    box-shadow: 0px 5px 22px rgba(145, 158, 171, 0.08);
+    overflow: hidden;
+}
+
+.tableHeader {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #f3f4f6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.tableTitle {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    text-align: left;
+}
+
+.th {
+    padding: 0.75rem 1rem;
+    color: #6b7280;
+    font-weight: 600;
+    white-space: nowrap;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f9fafb;
+}
+
+.td {
+    padding: 0.85rem 1rem;
+    color: #374151;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.formSection {
+    background: #ffffff;
+    padding: 2.25rem;
+    border-radius: 20px;
+    border: none;
+    box-shadow: 0px 5px 22px rgba(145, 158, 171, 0.08);
+}
+
+.label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: #374151;
+}
+
+.input {
+    width: 100%;
+    padding: 0.65rem;
+    border: 1px solid #dcdbd6;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
+.layoutContainer {
+    display: flex;
+    min-height: 100vh;
+    background-color: #F8F9FA; /* Devias light grey background */
+    font-family: 'Inter', system-ui, sans-serif;
+}
+
+.layoutMain {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.layoutContent {
+    flex: 1;
+    padding: 1.5rem;
+    box-sizing: border-box;
+    overflow-y: auto;
+}

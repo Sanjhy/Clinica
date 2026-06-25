@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const API = 'http://localhost:8080';
@@ -55,12 +55,12 @@ export default function DashboardEnfermera({ user, onAccion }) {
                 </p>
             </div>
 
-            {/* Tarjetas resumen */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
-                <Metrica icon="👥" label="Pacientes activos" valor={totalPacientes} color="#0d9488" />
-                <Metrica icon="🩺" label="Triajes hoy" valor={triajes.length} color="#2563eb" />
-                <Metrica icon="⏳" label="En espera" valor={totalPacientes} color="#d97706" />
-                <Metrica icon="🚨" label="Casos urgentes" valor={0} color="#dc2626" />
+            {/* Tarjetas resumen (Berry Style Gradients) */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem' }}>
+                <Metrica icon="👥" label="Pacientes activos" valor={totalPacientes} bg="linear-gradient(135deg, #5e35b1 0%, #4527a0 100%)" color="#fff" />
+                <Metrica icon="🩺" label="Triajes hoy" valor={triajes.length} bg="linear-gradient(135deg, #1e88e5 0%, #1565c0 100%)" color="#fff" />
+                <Metrica icon="⏳" label="En espera" valor={totalPacientes} bg="#ffffff" color="#1e1b4b" labelColor="#64748b" />
+                <Metrica icon="🚨" label="Casos urgentes" valor={0} bg="#ffffff" color="#dc2626" labelColor="#64748b" />
             </div>
 
             {/* Lista de pacientes del día */}
@@ -116,19 +116,48 @@ export default function DashboardEnfermera({ user, onAccion }) {
     );
 }
 
-function Metrica({ icon, label, valor, color }) {
+function Metrica({ icon, label, valor, bg, color, labelColor = "rgba(255,255,255,0.8)" }) {
     return (
-        <div style={{ background: '#fff', borderRadius: '12px', padding: '1.25rem 1.5rem', border: '1px solid #e5e7eb', boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
-            <div style={{ fontSize: '1.4rem', marginBottom: '0.5rem' }}>{icon}</div>
-            <div style={{ fontSize: '1.8rem', fontWeight: 800, color, lineHeight: 1 }}>{valor}</div>
-            <div style={{ fontSize: '0.8rem', color: '#6b7280', marginTop: '0.25rem' }}>{label}</div>
+        <div style={{ 
+            background: bg, 
+            borderRadius: '12px', 
+            padding: '1.5rem', 
+            border: bg === '#ffffff' ? 'none' : 'none', 
+            boxShadow: '0 2px 14px 0 rgba(32, 40, 45, 0.08)',
+            position: 'relative',
+            overflow: 'hidden'
+        }}>
+            {/* Decal circle effect typical in Berry */}
+            <div style={{ 
+                position: 'absolute', top: '-20px', right: '-20px', 
+                width: '100px', height: '100px', 
+                borderRadius: '50%', background: 'rgba(255,255,255,0.08)' 
+            }}></div>
+            <div style={{ 
+                position: 'absolute', top: '40px', right: '-40px', 
+                width: '100px', height: '100px', 
+                borderRadius: '50%', background: 'rgba(255,255,255,0.08)' 
+            }}></div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative', zIndex: 1 }}>
+                <div>
+                    <div style={{ fontSize: '2.5rem', fontWeight: 800, color, lineHeight: 1 }}>{valor}</div>
+                    <div style={{ fontSize: '0.9rem', color: labelColor, marginTop: '0.5rem', fontWeight: '500' }}>{label}</div>
+                </div>
+                <div style={{ 
+                    fontSize: '1.2rem', background: 'rgba(255,255,255,0.15)', 
+                    width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px'
+                }}>
+                    {icon}
+                </div>
+            </div>
         </div>
     );
 }
 
-const card = { background: '#fff', borderRadius: '14px', padding: '1.5rem', border: '1px solid #e5e7eb', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' };
+const card = { background: '#fff', borderRadius: '12px', padding: '1.5rem', border: 'none', boxShadow: '0 2px 14px 0 rgba(32, 40, 45, 0.08)' };
 const tbl = { width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' };
 const th = { textAlign: 'left', padding: '0.65rem 0.75rem', background: '#f9fafb', color: '#374151', fontWeight: 600, fontSize: '0.8rem', whiteSpace: 'nowrap' };
 const td = { padding: '0.75rem', color: '#111827' };
-const btnGreen = { padding: '0.35rem 0.85rem', background: '#033323', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '0.82rem' };
+const btnGreen = { padding: '0.45rem 1rem', background: '#5e35b1', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.82rem', boxShadow: '0 2px 6px rgba(94, 53, 177, 0.2)' };
 const badge = (bg, color) => ({ background: bg, color, fontSize: '0.75rem', fontWeight: 600, padding: '0.2rem 0.6rem', borderRadius: '20px', display: 'inline-block' });

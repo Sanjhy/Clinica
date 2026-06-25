@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
+import styles from '../styles/Medico.module.css';
 
 export default function DashboardMedico({ user, onNavegar }) {
     const [medicoInfo, setMedicoInfo] = useState(null);
@@ -21,27 +22,37 @@ export default function DashboardMedico({ user, onNavegar }) {
 
                 const cfg = { headers: { Authorization: `Bearer ${token}` } };
 
-                // Cargar perfil del médico
                 try {
-                    const r = await axios.get('http://localhost:8080/api/pacientes', cfg);
-                    // Usamos la lista de pacientes como proxy de citas del día
-                    const lista = r.data || [];
-                    setCitasHoy(lista);
+                    const rPacientes = await axios.get('http://localhost:8080/api/medico/pacientes', cfg);
+                    const listaPacientes = rPacientes.data || [];
+
+                    const rCitas = await axios.get('http://localhost:8080/api/medico/citas', cfg);
+                    const citas = rCitas.data || [];
+                    
+                    const citasPendientes = citas.filter(c => c.estado === 'PENDIENTE' || c.estado === 'CONFIRMADA');
+                    setCitasHoy(citasPendientes); 
+
+                    const rRecetas = await axios.get('http://localhost:8080/api/medico/recetas', cfg);
+                    const recetas = rRecetas.data || [];
+                    const atendidos = new Set(recetas.map(r => r.dniPaciente)).size; // Pacientes únicos atendidos
+                    const enEspera = citasPendientes.length;
+                    
                     setMetricas({
-                        total: lista.length,
-                        espera: lista.filter(p => p.activo).length,
-                        atendidos: 0,
+                        total: listaPacientes.length,
+                        espera: enEspera,
+                        atendidos: atendidos,
                         urgentes: 0
                     });
-                } catch { /* endpoint puede no existir aún */ }
+                } catch (e) {
+                    console.error("Error cargando dashboard:", e);
+                    setError('Fallo al obtener los indicadores. Revise la consola.');
+                }
 
-                // Datos del médico desde la sesión
                 setMedicoInfo({
                     nombreCompleto: user?.nombreCompleto || '',
                     especialidad: user?.especialidad || 'Medicina General'
                 });
 
-                setError(null);
             } catch (err) {
                 setError('Error al conectar con el servidor.');
             } finally {
@@ -51,99 +62,120 @@ export default function DashboardMedico({ user, onNavegar }) {
         if (user !== null) cargar();
     }, [user]);
 
-    const cardStyle = (color = '#033323') => ({
-        background: '#ffffff',
-        padding: '1.5rem',
-        borderRadius: '14px',
-        border: '1px solid #e5e7eb',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-    });
-
     if (loading) return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh', color: '#033323', fontWeight: 600 }}>
+        <div className={styles.container}>
             🔄 Conectando con el servidor...
         </div>
     );
 
     return (
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            {/* Encabezado */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
+        <div className={styles.container}>
+            <div className={styles.header}>
                 <div>
-                    <h1 style={{ margin: 0, fontSize: 'clamp(1.3rem, 3vw, 1.75rem)', color: '#033323', fontWeight: 700 }}>
+                    <h1 className={styles.title}>
                         Bienvenido, {medicoInfo?.nombreCompleto ? `Dr. ${medicoInfo.nombreCompleto.split(' ')[1] || medicoInfo.nombreCompleto}` : 'Doctor'}
                     </h1>
-                    <p style={{ margin: '0.25rem 0 0', color: '#6b7280', fontSize: '0.9rem' }}>
+                    <p className={styles.subtitle}>
                         {medicoInfo?.especialidad} · {obtenerFechaElegante()}
                     </p>
                 </div>
                 <button
-                    onClick={() => onNavegar && onNavegar('pacientes')}
-                    style={{ background: '#033323', color: '#fff', border: 'none', padding: '0.6rem 1.25rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }}
+                    onClick={() => onNavegar && onNavegar('citas')}
+                    className={styles.btnPrimary}
                 >
-                    Ver pacientes →
+                    Ver agenda de hoy →
                 </button>
             </div>
 
             {error && (
-                <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
+                <div className={styles.errorBox}>
                     ⚠️ {error}
                 </div>
             )}
 
-            {/* Tarjetas de métricas */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
-                <div style={cardStyle()}>
-                    <p style={{ margin: 0, fontSize: '0.75rem', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: 600 }}>Pacientes totales</p>
-                    <p style={{ margin: '0.5rem 0 0', fontSize: '2.2rem', fontWeight: 800, color: '#033323' }}>{metricas.total}</p>
-                </div>
-                <div style={cardStyle()}>
-                    <p style={{ margin: 0, fontSize: '0.75rem', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: 600 }}>Activos</p>
-                    <p style={{ margin: '0.5rem 0 0', fontSize: '2.2rem', fontWeight: 800, color: '#d97706' }}>{metricas.espera}</p>
-                </div>
-                <div style={cardStyle()}>
-                    <p style={{ margin: 0, fontSize: '0.75rem', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: 600 }}>Atendidos hoy</p>
-                    <p style={{ margin: '0.5rem 0 0', fontSize: '2.2rem', fontWeight: 800, color: '#16a34a' }}>{metricas.atendidos}</p>
-                </div>
-                <div style={{ ...cardStyle(), background: '#fef2f2', border: '1px solid #fee2e2' }}>
-                    <p style={{ margin: 0, fontSize: '0.75rem', color: '#991b1b', textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: 600 }}>Urgencias</p>
-                    <p style={{ margin: '0.5rem 0 0', fontSize: '2.2rem', fontWeight: 800, color: '#dc2626' }}>{metricas.urgentes}</p>
-                </div>
-            </div>
-
-            {/* Tabla de pacientes recientes */}
-            <div style={{ background: '#ffffff', borderRadius: '14px', border: '1px solid #e5e7eb', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
-                <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #f3f4f6', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
-                    <h2 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700, color: '#111827' }}>Pacientes registrados</h2>
-                    <button onClick={() => onNavegar && onNavegar('pacientes')} style={{ background: 'transparent', border: 'none', color: '#0d9488', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>
-                        Ver todos →
+            {/* Welcome Banner Minimal */}
+            <div style={{
+                background: 'linear-gradient(135deg, rgba(0, 167, 111, 0.2) 0%, rgba(255, 255, 255, 0) 100%)',
+                backgroundColor: '#c8fad6',
+                borderRadius: '16px',
+                padding: '2.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                color: '#004B50',
+                marginBottom: '2rem'
+            }}>
+                <div>
+                    <h1 style={{ margin: '0 0 0.5rem', fontSize: '1.8rem', fontWeight: 800, color: '#004b50' }}>
+                        ¡Bienvenido de vuelta,<br /> Dr. {medicoInfo?.nombreCompleto?.split(' ')[1] || medicoInfo?.nombreCompleto?.split(' ')[0] || 'Doctor'}! 👋
+                    </h1>
+                    <p style={{ margin: 0, opacity: 0.9, fontSize: '0.95rem', maxWidth: '400px', lineHeight: 1.5 }}>
+                        Si vas a usar el sistema para revisar historiales, asegúrate de tener las herramientas listas. ¡Que tengas un excelente turno!
+                    </p>
+                    <button onClick={() => onNavegar('pacientes')} style={{ 
+                        marginTop: '1.5rem', background: '#00A76F', color: '#fff', border: 'none', 
+                        padding: '0.65rem 1.2rem', borderRadius: '8px', fontWeight: 700, cursor: 'pointer',
+                        boxShadow: '0 8px 16px 0 rgba(0, 167, 111, 0.24)'
+                    }}>
+                        Ver mis pacientes
                     </button>
                 </div>
-                <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                <div style={{ fontSize: '6rem', opacity: 0.8, marginRight: '2rem' }}>🧑‍⚕️</div>
+            </div>
+
+            {/* Tarjetas resumen Minimal */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+                <Metrica icon="👥" label="Pacientes hoy" valor={metricas.total} />
+                <Metrica icon="📝" label="Triajes en espera" valor={metricas.espera} />
+                <Metrica icon="🚨" label="Urgencias" valor={metricas.urgentes} isAlert />
+                <Metrica icon="💬" label="Mensajes sin leer" valor={0} />
+            </div>
+
+            <div className={styles.tableContainer}>
+                <div className={styles.tableHeader}>
+                    <h2 className={styles.tableTitle}>Agenda de Hoy</h2>
+                    <button onClick={() => onNavegar && onNavegar('citas')} className={styles.btnLink}>
+                        Ver todas las citas →
+                    </button>
+                </div>
+                <div className={styles.tableWrapper}>
+                    <table className={styles.table}>
                         <thead>
-                            <tr style={{ background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
-                                <th style={{ padding: '0.75rem 1rem', textAlign: 'left', color: '#6b7280', fontWeight: 600, whiteSpace: 'nowrap' }}>Nombre</th>
-                                <th style={{ padding: '0.75rem 1rem', textAlign: 'left', color: '#6b7280', fontWeight: 600, whiteSpace: 'nowrap' }}>DNI</th>
-                                <th style={{ padding: '0.75rem 1rem', textAlign: 'left', color: '#6b7280', fontWeight: 600, whiteSpace: 'nowrap' }}>Seguro</th>
-                                <th style={{ padding: '0.75rem 1rem', textAlign: 'center', color: '#6b7280', fontWeight: 600, whiteSpace: 'nowrap' }}>Acción</th>
+                            <tr>
+                                <th className={styles.th}>Hora</th>
+                                <th className={styles.th}>Paciente</th>
+                                <th className={styles.th}>Estado</th>
+                                <th className={styles.th} style={{ textAlign: 'center' }}>Acción</th>
                             </tr>
                         </thead>
                         <tbody>
                             {citasHoy.length === 0 ? (
-                                <tr><td colSpan="4" style={{ padding: '2rem', textAlign: 'center', color: '#9ca3af' }}>No hay pacientes registrados aún.</td></tr>
+                                <tr>
+                                    <td colSpan="4" className={styles.td} style={{ textAlign: 'center' }}>
+                                        No hay pacientes agendados.
+                                    </td>
+                                </tr>
                             ) : (
-                                citasHoy.slice(0, 5).map((p, i) => (
-                                    <tr key={p.codPaciente || i} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                                        <td style={{ padding: '0.85rem 1rem', fontWeight: 600, color: '#111827' }}>{p.nombreCompleto || `${p.nombres} ${p.apellidoPaterno}`}</td>
-                                        <td style={{ padding: '0.85rem 1rem', fontFamily: 'monospace', color: '#374151' }}>{p.dni}</td>
-                                        <td style={{ padding: '0.85rem 1rem', color: '#374151' }}>{p.tipoSeguroNombre || '-'}</td>
-                                        <td style={{ padding: '0.85rem 1rem', textAlign: 'center' }}>
+                                citasHoy.slice(0, 5).map((c, i) => (
+                                    <tr key={c.codCita || i}>
+                                        <td className={styles.td}>
+                                            {new Date(c.fechaHora).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </td>
+                                        <td className={styles.td}>
+                                            {c.pacienteNombreCompleto} <br/>
+                                            <span style={{fontSize: '0.75rem', color: '#6b7280'}}>DNI: {c.dniPaciente}</span>
+                                        </td>
+                                        <td className={styles.td}>
+                                            <span className={c.estado === 'COMPLETADA' ? styles.badgeCompletada : c.estado === 'PENDIENTE' ? styles.badgePendiente : styles.badgeConfirmada}>
+                                                {c.estado}
+                                            </span>
+                                        </td>
+                                        <td className={styles.td} style={{ textAlign: 'center' }}>
                                             <button
-                                                onClick={() => onNavegar && onNavegar('pacientes')}
-                                                style={{ background: '#ecfdf5', color: '#065f46', border: 'none', padding: '0.3rem 0.75rem', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '0.8rem' }}
+                                                onClick={() => onNavegar && onNavegar('triaje')}
+                                                className={styles.btnAction}
                                             >
-                                                Ver
+                                                Atender
                                             </button>
                                         </td>
                                     </tr>
@@ -152,6 +184,36 @@ export default function DashboardMedico({ user, onNavegar }) {
                         </tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+    );
+}
+
+function Metrica({ icon, label, valor, isAlert }) {
+    return (
+        <div style={{
+            background: '#fff',
+            borderRadius: '16px',
+            padding: '1.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem',
+            boxShadow: '0 2px 14px 0 rgba(32, 40, 45, 0.08)',
+            borderLeft: isAlert ? '4px solid #FF5630' : 'none'
+        }}>
+            <div style={{
+                background: isAlert ? 'rgba(255, 86, 48, 0.16)' : 'rgba(0, 167, 111, 0.16)',
+                color: isAlert ? '#FF5630' : '#00A76F',
+                width: '60px', height: '60px',
+                borderRadius: '50%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '1.8rem'
+            }}>
+                {icon}
+            </div>
+            <div>
+                <h3 style={{ margin: '0 0 0.25rem', fontSize: '1.5rem', fontWeight: 700, color: '#212B36' }}>{valor}</h3>
+                <p style={{ margin: 0, fontSize: '0.875rem', color: '#637381', fontWeight: 600 }}>{label}</p>
             </div>
         </div>
     );

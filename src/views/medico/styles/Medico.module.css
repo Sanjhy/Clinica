@@ -1,0 +1,345 @@
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.title {
+    margin: 0;
+    font-size: clamp(1.4rem, 3vw, 1.85rem);
+    color: #0f172a;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.subtitle {
+    margin: 0.25rem 0 0;
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+.btnPrimary {
+    background: #0f172a;
+    color: #ffffff;
+    border: none;
+    padding: 0.65rem 1.35rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.btnPrimary:hover {
+    background: #1e293b;
+    transform: translateY(-1px);
+}
+
+.btnAction {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.btnDelete {
+    background: #fee2e2;
+    color: #dc2626;
+    border: none;
+    border-radius: 6px;
+    padding: 0.5rem;
+    cursor: pointer;
+    height: 33px;
+}
+
+.errorBox {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.successBox {
+    background: #d1fae5;
+    color: #065f46;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.gridCards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.card {
+    background: #ffffff;
+    padding: 1.5rem;
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 0 2px 0 rgba(145, 158, 171, 0.2), 0 12px 24px -4px rgba(145, 158, 171, 0.12);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    box-shadow: 0 0 2px 0 rgba(145, 158, 171, 0.2), 0 16px 32px -4px rgba(145, 158, 171, 0.16);
+}
+
+.cardUrgencias {
+    background: #fef2f2;
+    border: 1px solid #fee2e2;
+}
+
+.cardTitle {
+    margin: 0;
+    font-size: 0.75rem;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    font-weight: 600;
+}
+
+.cardValue {
+    margin: 0.5rem 0 0;
+    font-size: 2.2rem;
+    font-weight: 800;
+}
+
+.cardValueNormal { color: #0f172a; }
+.cardValueWarning { color: #d97706; }
+.cardValueSuccess { color: #16a34a; }
+.cardValueDanger { color: #dc2626; }
+
+.tableContainer {
+    background: #ffffff;
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 0 2px 0 rgba(145, 158, 171, 0.2), 0 12px 24px -4px rgba(145, 158, 171, 0.12);
+    overflow: hidden;
+}
+
+.tableHeader {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #f3f4f6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.tableTitle {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.btnLink {
+    background: transparent;
+    border: none;
+    color: #0d9488;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.tableWrapper {
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    text-align: left;
+}
+
+.th {
+    padding: 0.75rem 1rem;
+    color: #6b7280;
+    font-weight: 600;
+    white-space: nowrap;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f9fafb;
+}
+
+.td {
+    padding: 0.85rem 1rem;
+    color: #374151;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.badgeCompletada {
+    background: #e0e7ff;
+    color: #4f46e5;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+
+.badgePendiente {
+    background: #fef3c7;
+    color: #d97706;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+
+.badgeConfirmada {
+    background: #e6f7f0;
+    color: #16a34a;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+
+.formGrid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: 1fr;
+}
+
+.formSection {
+    background: #ffffff;
+    padding: 2.25rem;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+}
+
+.formRow {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.formRowUnbalanced {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    gap: 1.5rem;
+}
+
+.label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: #374151;
+}
+
+.input {
+    width: 100%;
+    padding: 0.65rem;
+    border: 1px solid #dcdbd6;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
+.textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #dcdbd6;
+    border-radius: 8px;
+    box-sizing: border-box;
+    resize: vertical;
+}
+
+.recipeBox {
+    background: #f9fafb;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.recipeHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+/* Layout Medico */
+.layoutContainer {
+    display: flex;
+    min-height: 100vh;
+    background-color: #F4F6F8; /* Minimal light grey */
+    font-family: 'Public Sans', 'Inter', system-ui, sans-serif;
+}
+
+.layoutMain {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.layoutContent {
+    flex: 1;
+    padding: 1.5rem;
+    box-sizing: border-box;
+    overflow-y: auto;
+}
+
+.recipeRow {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
+    gap: 0.75rem;
+    align-items: end;
+}
+
+.triajeAlert {
+    background: #fefce8;
+    border: 1px solid #fef08a;
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.triajeLabel {
+    font-size: 0.75rem;
+    color: #854d0e;
+    display: block;
+    text-transform: uppercase;
+}
+
+.triajeValue {
+    font-size: 0.9rem;
+    color: #713f12;
+}
+
+.triajeValueDanger {
+    font-size: 0.9rem;
+    color: #dc2626;
+    font-weight: 700;
+}
+
+.triajeValueSuccess {
+    font-size: 0.9rem;
+    color: #16a34a;
+    font-weight: 600;
+}

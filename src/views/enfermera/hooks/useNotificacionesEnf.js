@@ -29,29 +29,24 @@ export function useNotificacionesEnf(token) {
         if (!mensaje.trim()) return;
         setEnviando(true);
         try {
-            // Intentamos POST al backend — si no existe devuelve error silencioso
             const cfg = { headers: { Authorization: `Bearer ${token}` } };
-            await axios.post(`${API}/api/notificaciones`, {
-                tipo: 'MENSAJE_INTERNO',
-                titulo: `Mensaje de Enfermería → ${destinatario}`,
+            
+            // Determinar el rol destino según la selección
+            let rolBackend = destinatario;
+            if (destinatario === 'ADMIN') rolBackend = 'ADMINISTRATIVO';
+            if (destinatario === 'ADMIN_TI') rolBackend = 'ADMIN_TI'; // O el rol exacto en DB
+
+            await axios.post(`${API}/api/notificaciones/rol/${rolBackend}`, {
+                titulo: `Alerta de Enfermería`,
                 mensaje,
-                leida: false
+                referenciaTipo: 'MENSAJE_INTERNO'
             }, cfg);
-            setMsg({ ok: true, txt: '✅ Mensaje enviado correctamente.' });
+            
+            setMsg({ ok: true, txt: '✅ Mensaje enviado correctamente al equipo de ' + destinatario + '.' });
             setMensaje('');
-            await cargar();
-        } catch {
-            // Agregamos a lista local si el backend no tiene el endpoint
-            setLista(prev => [{
-                codNotificacion: Date.now(),
-                tipo: 'MENSAJE_INTERNO',
-                titulo: `→ ${destinatario}`,
-                mensaje,
-                leida: false,
-                fecha: new Date().toISOString()
-            }, ...prev]);
-            setMsg({ ok: true, txt: '✅ Mensaje registrado.' });
-            setMensaje('');
+        } catch (err) {
+            console.error(err);
+            setMsg({ ok: false, txt: '❌ Error al enviar el mensaje al servidor.' });
         } finally {
             setEnviando(false);
             setTimeout(() => setMsg(null), 3000);

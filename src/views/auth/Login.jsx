@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLogin } from './useLogin';
 import styles from './Login.module.css';
 
@@ -14,6 +15,23 @@ export default function Login() {
         loading,
         handleLogin
     } = useLogin();
+    
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const sessionData = sessionStorage.getItem('cam_user');
+        if (sessionData) {
+            try {
+                const user = JSON.parse(sessionData);
+                if (user.rol === 'MEDICO') navigate('/medico/dashboard', { replace: true });
+                else if (user.rol === 'ENFERMERA') navigate('/asistencial/dashboard', { replace: true });
+                else if (user.rol === 'ADMINISTRATIVO') navigate('/admin/dashboard', { replace: true });
+                else if (user.rol === 'ADMIN_TI') navigate('/ti/dashboard', { replace: true });
+            } catch (e) {
+                // ignore
+            }
+        }
+    }, [navigate]);
 
     return (
         <div className={styles.loginContainer}>

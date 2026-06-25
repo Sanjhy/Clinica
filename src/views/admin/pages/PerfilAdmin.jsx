@@ -7,7 +7,7 @@ import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 const API = 'http://localhost:8080';
 
-export default function PerfilEnfermera({ user }) {
+export default function PerfilAdmin({ user }) {
     const [perfil, setPerfil] = useState({ nombre: '', apellidos: '' });
     const [pwd, setPwd] = useState({ passwordActual: '', passwordNueva: '', confirmar: '' });
     const [showPwd, setShowPwd] = useState({ actual: false, nueva: false, confirmar: false });
@@ -85,7 +85,7 @@ export default function PerfilEnfermera({ user }) {
         }
     };
 
-    const iniciales = `${perfil.nombre[0] || ''}${perfil.apellidos[0] || ''}`.toUpperCase() || 'EN';
+    const iniciales = `${perfil.nombre[0] || ''}${perfil.apellidos[0] || ''}`.toUpperCase() || 'AD';
 
     if (loading) {
         return <Box sx={{ p: 4, textAlign: 'center', color: '#64748b' }}>Cargando perfil...</Box>;
@@ -132,24 +132,24 @@ export default function PerfilEnfermera({ user }) {
         <Box sx={{ bgcolor: lightTheme.bg, minHeight: '100%', borderRadius: 3, p: { xs: 2, md: 5 }, color: lightTheme.textMain }}>
             <Box sx={{ maxWidth: 800, mx: 'auto' }}>
                 <Typography variant="h4" sx={{ fontWeight: 800, mb: 3, color: lightTheme.textMain, borderBottom: `1px solid ${lightTheme.border}`, pb: 2 }}>
-                    Ajustes de Perfil (Enfermería)
+                    Ajustes de Perfil (Administrador)
                 </Typography>
 
                 <Box sx={{ mb: 4, p: 2, border: `1px solid rgba(245, 158, 11, 0.4)`, borderRadius: 2, bgcolor: 'rgba(245, 158, 11, 0.05)', display: 'flex', alignItems: 'flex-start', gap: 2 }}>
                     <WarningAmberIcon sx={{ color: '#f59e0b' }} />
                     <Typography variant="body2" sx={{ color: lightTheme.textMain }}>
-                        Estás viendo tu perfil como miembro del Personal de Enfermería. Mantén tu información actualizada para los registros oficiales del Hospital CAM Pucallpa.
+                        Estás viendo tu perfil como Administrador. Los cambios realizados aquí se reflejarán en todos los registros administrativos.
                     </Typography>
                 </Box>
 
                 {/* Avatar Section */}
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mb: 4, p: 3, border: `1px solid ${lightTheme.border}`, borderRadius: 2, bgcolor: lightTheme.cardBg, boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
-                    <Avatar sx={{ width: 80, height: 80, bgcolor: '#0ea5e9', fontSize: '2rem', fontWeight: 600 }}>
+                    <Avatar sx={{ width: 80, height: 80, bgcolor: '#8b5cf6', fontSize: '2rem', fontWeight: 600 }}>
                         {iniciales}
                     </Avatar>
                     <Box>
                         <Typography variant="h5" sx={{ fontWeight: 700, color: lightTheme.textMain }}>{perfil.nombre} {perfil.apellidos}</Typography>
-                        <Typography variant="body2" sx={{ color: lightTheme.textMuted }}>Enfermería • CAM Pucallpa</Typography>
+                        <Typography variant="body2" sx={{ color: lightTheme.textMuted }}>Administrador • CAM Pucallpa</Typography>
                     </Box>
                 </Box>
 
@@ -218,9 +218,9 @@ export default function PerfilEnfermera({ user }) {
                     </Box>
                     <Box sx={{ p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Box pr={4}>
-                            <Typography sx={{ fontWeight: 600, color: lightTheme.textMain }}>Bloquear notificaciones administrativas</Typography>
+                            <Typography sx={{ fontWeight: 600, color: lightTheme.textMain }}>Modo Administrador Incógnito</Typography>
                             <Typography variant="body2" sx={{ color: lightTheme.textMuted, mt: 0.5 }}>
-                                Cuando activas esto, no recibirás los anuncios masivos por parte de la administración. (No recomendado)
+                                Cuando activas esto, tu estado aparecerá como desconectado para los demás usuarios de la clínica.
                             </Typography>
                         </Box>
                         <Switch color="primary" />

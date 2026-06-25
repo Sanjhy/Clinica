@@ -1,61 +1,65 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
+import styles from '../styles/Medico.module.css';
 
-export default function RecetasMedico({ atencionId = 1 }) {
-    const [medicamentos, setMedicamentos] = useState([]);
-    const [nombre, setNombre] = useState('');
-    const [indicacion, setIndicacion] = useState('');
+export default function RecetasMedico({ user }) {
+    const [recetas, setRecetas] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const agregarFarmaco = (e) => {
-        e.preventDefault();
-        if (!nombre || !indicacion) return;
-        setMedicamentos([...medicamentos, { nombre, indicacion }]);
-        setNombre('');
-        setIndicacion('');
-    };
-
-    const enviarReceta = async () => {
-        if (medicamentos.length === 0) return;
-        try {
-            const session = JSON.parse(localStorage.getItem('cam_user') || '{}');
-            const config = { headers: { Authorization: `Bearer ${session.accessToken}` } };
-
-            await axios.post('http://localhost:8080/api/medico/recetas/guardar', {
-                atencionId: atencionId,
-                items: medicamentos
-            }, config);
-
-            alert("✓ Receta enviada al servidor de farmacia e impresión local.");
-            setMedicamentos([]);
-        } catch (err) {
-            console.error(err);
-        }
-    };
+    useEffect(() => {
+        const fetchRecetas = async () => {
+            try {
+                const token = user?.accessToken;
+                if (!token) return;
+                const config = { headers: { Authorization: `Bearer ${token}` } };
+                const res = await axios.get('http://localhost:8080/api/medico/recetas', config);
+                setRecetas(res.data || []);
+            } catch (err) {
+                console.error("Error al recuperar recetas:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchRecetas();
+    }, [user]);
 
     return (
-        <div style={{ background: '#ffffff', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e5e5e0' }}>
-            <h2 style={{ margin: '0 0 1.5rem 0', fontSize: '1.25rem', color: '#033323' }}>Prescripción de Medicamentos</h2>
+        <div className={styles.tableContainer} style={{ padding: '1.5rem' }}>
+            <h2 className={styles.title} style={{ marginBottom: '1.5rem' }}>Historial de Recetas Emitidas</h2>
             
-            <form onSubmit={agregarFarmaco} style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-                <input type="text" placeholder="Nombre del medicamento" value={nombre} onChange={(e) => setNombre(e.target.value)} style={{ padding: '0.6rem', border: '1px solid #dcdbd6', borderRadius: '6px', flex: 2 }} required />
-                <input type="text" placeholder="Indicaciones (Ej: 1 tab cada 8h)" value={indicacion} onChange={(e) => setIndicacion(e.target.value)} style={{ padding: '0.6rem', border: '1px solid #dcdbd6', borderRadius: '6px', flex: 2 }} required />
-                <button type="submit" style={{ padding: '0.6rem 1.5rem', backgroundColor: '#033323', color: '#ffffff', border: 'none', borderRadius: '6px', fontWeight: '600', cursor: 'pointer' }}>+ Añadir</button>
-            </form>
-
-            <div style={{ marginBottom: '2rem' }}>
-                <h3 style={{ fontSize: '0.9rem', color: '#555555', textTransform: 'uppercase' }}>Fármacos en la receta</h3>
-                {medicamentos.length === 0 ? <p style={{ fontStyle: 'italic', color: '#888888', fontSize: '0.9rem' }}>No hay medicamentos agregados.</p> : (
-                    medicamentos.map((m, i) => (
-                        <div key={i} style={{ padding: '0.75rem', background: '#fcfbf7', border: '1px solid #e5e5e0', borderRadius: '8px', marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
-                            <span>💊 <strong>{m.nombre}</strong> — {m.indicacion}</span>
-                        </div>
-                    ))
-                )}
+            <div className={styles.tableWrapper}>
+                <table className={styles.table}>
+                    <thead>
+                        <tr>
+                            <th className={styles.th}>Paciente</th>
+                            <th className={styles.th}>DNI</th>
+                            <th className={styles.th}>Fecha Emisión</th>
+                            <th className={styles.th}>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {loading ? (
+                            <tr><td colSpan="4" className={styles.td} style={{ textAlign: 'center' }}>Cargando recetas...</td></tr>
+                        ) : recetas.length === 0 ? (
+                            <tr><td colSpan="4" className={styles.td} style={{ textAlign: 'center', fontStyle: 'italic', color: '#777777' }}>No ha emitido recetas aún.</td></tr>
+                        ) : (
+                            recetas.map((r) => (
+                                <tr key={r.codReceta}>
+                                    <td className={styles.td} style={{ fontWeight: '600' }}>{r.pacienteNombreCompleto}</td>
+                                    <td className={styles.td}>{r.dniPaciente}</td>
+                                    <td className={styles.td}>{new Date(r.fechaEmision).toLocaleString()}</td>
+                                    <td className={styles.td}>
+                                        <span className={styles.badgeConfirmada}>
+                                            {r.estado}
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
             </div>
-
-            <button onClick={enviarReceta} disabled={medicamentos.length === 0} style={{ width: '100%', padding: '0.8rem', backgroundColor: '#16a34a', color: '#ffffff', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: medicamentos.length === 0 ? 'not-allowed' : 'pointer' }}>
-                🖨️ Procesar y Firmar Receta
-            </button>
+            <p style={{ marginTop: '1.5rem', fontSize: '0.85rem', color: '#6b7280' }}>* Las recetas nuevas se emiten directamente al registrar la Consulta Médica en la sección de Historia Clínica.</p>
         </div>
     );
 }

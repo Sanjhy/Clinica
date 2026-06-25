@@ -1,80 +1,193 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import { usePacientesMedico } from '../hooks/usePacientesMedico';
+import styles from '../styles/Medico.module.css';
 
-export default function PacienteMedico({ user }) {
+export default function PacienteMedico({ user, onNavegar }) {
     const { pacientes, busqueda, setBusqueda, loading } = usePacientesMedico(user?.accessToken);
     const [pacienteSeleccionado, setPacienteSeleccionado] = useState(null);
+    const [atendidosIds, setAtendidosIds] = useState(new Set());
+    const [historial, setHistorial] = useState([]);
+    const [loadingHistorial, setLoadingHistorial] = useState(false);
+
+    useEffect(() => {
+        if (user?.accessToken) {
+            fetch('http://localhost:8080/api/medico/recetas', { headers: { Authorization: `Bearer ${user.accessToken}` } })
+                .then(res => res.json())
+                .then(data => {
+                    const ids = new Set(data.map(r => r.dniPaciente));
+                    setAtendidosIds(ids);
+                })
+                .catch(e => console.error(e));
+        }
+    }, [user]);
+
+    const cargarHistorial = async (p) => {
+        setPacienteSeleccionado(p);
+        setLoadingHistorial(true);
+        try {
+            const res = await axios.get(`http://localhost:8080/api/medico/consultas/historial/${p.codPaciente}`, {
+                headers: { Authorization: `Bearer ${user.accessToken}` }
+            });
+            setHistorial(res.data || []);
+        } catch (e) {
+            console.error('Error al cargar historial', e);
+        } finally {
+            setLoadingHistorial(false);
+        }
+    };
+
+    const pacientesAtendidos = pacientes.filter(p => atendidosIds.has(p.dni));
+
+    const calcularEdad = (fechaNacimiento) => {
+        const hoy = new Date();
+        const nacimiento = new Date(fechaNacimiento);
+        let edad = hoy.getFullYear() - nacimiento.getFullYear();
+        const m = hoy.getMonth() - nacimiento.getMonth();
+        if (m < 0 || (m === 0 && hoy.getDate() < nacimiento.getDate())) {
+            edad--;
+        }
+        return edad;
+    };
 
     if (pacienteSeleccionado) {
         return (
-            <div>
-                <button
-                    onClick={() => setPacienteSeleccionado(null)}
-                    style={{ marginBottom: '1.25rem', background: 'transparent', border: '1px solid #e5e7eb', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', color: '#374151', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.9rem' }}
-                >
-                    ← Volver a pacientes
+            <div className={styles.container}>
+                <button onClick={() => setPacienteSeleccionado(null)} className={styles.btnPrimary} style={{ marginBottom: '1rem', backgroundColor: '#4b5563' }}>
+                    ← Volver a Pacientes Atendidos
                 </button>
-                <DetallesPaciente pacienteId={pacienteSeleccionado} token={user?.accessToken} />
+                
+                <div className={styles.formSection} style={{ marginBottom: '1.5rem' }}>
+                    <h2 className={styles.title} style={{ marginBottom: '0.5rem', fontSize: '1.5rem' }}>
+                        Historial Médico: {pacienteSeleccionado.nombreCompleto || `${pacienteSeleccionado.nombres} ${pacienteSeleccionado.apellidoPaterno}`}
+                    </h2>
+                    <p style={{ margin: 0, color: '#4b5563' }}>
+                        DNI: <strong>{pacienteSeleccionado.dni}</strong> | Edad: <strong>{pacienteSeleccionado.fechaNacimiento ? calcularEdad(pacienteSeleccionado.fechaNacimiento) : '-'} años</strong> | Sexo: <strong>{pacienteSeleccionado.sexo}</strong>
+                    </p>
+                </div>
+
+                {loadingHistorial ? (
+                    <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>Cargando historial completo...</div>
+                ) : historial.length === 0 ? (
+                    <div className={styles.formSection} style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>
+                        No hay atenciones médicas registradas para este paciente.
+                    </div>
+                ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                        {historial.map((consulta) => (
+                            <div key={consulta.codConsulta} className={styles.formSection} style={{ borderLeft: '4px solid #033323', padding: '1.5rem' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', borderBottom: '1px solid #e5e7eb', paddingBottom: '0.75rem' }}>
+                                    <div>
+                                        <h3 style={{ margin: '0 0 0.25rem 0', color: '#111827', fontSize: '1.15rem' }}>Consulta de {consulta.tipoConsulta}</h3>
+                                        <p style={{ margin: 0, color: '#6b7280', fontSize: '0.9rem' }}>{new Date(consulta.fechaConsulta).toLocaleString()}</p>
+                                    </div>
+                                    <span className={styles.badgeConfirmada}>COMPLETADA</span>
+                                </div>
+                                
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                                    <div>
+                                        <h4 style={{ margin: '0 0 0.5rem 0', color: '#374151', fontSize: '0.95rem' }}>📌 Motivo</h4>
+                                        <p style={{ margin: 0, color: '#4b5563', fontSize: '0.9rem', backgroundColor: '#f9fafb', padding: '0.75rem', borderRadius: '6px' }}>{consulta.motivo || '-'}</p>
+                                    </div>
+                                    <div>
+                                        <h4 style={{ margin: '0 0 0.5rem 0', color: '#374151', fontSize: '0.95rem' }}>🩺 Examen Físico</h4>
+                                        <p style={{ margin: 0, color: '#4b5563', fontSize: '0.9rem', backgroundColor: '#f9fafb', padding: '0.75rem', borderRadius: '6px' }}>{consulta.examenFisico || '-'}</p>
+                                    </div>
+                                    <div>
+                                        <h4 style={{ margin: '0 0 0.5rem 0', color: '#374151', fontSize: '0.95rem' }}>⚕️ Diagnóstico</h4>
+                                        <p style={{ margin: 0, color: '#4b5563', fontSize: '0.9rem', backgroundColor: '#f9fafb', padding: '0.75rem', borderRadius: '6px' }}>
+                                            <strong>{consulta.diagnosticoCie10 ? `[${consulta.diagnosticoCie10}] ` : ''}</strong>
+                                            {consulta.diagnosticoDesc || '-'}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <h4 style={{ margin: '0 0 0.5rem 0', color: '#374151', fontSize: '0.95rem' }}>📝 Evolución / Indicaciones</h4>
+                                        <p style={{ margin: 0, color: '#4b5563', fontSize: '0.9rem', backgroundColor: '#f9fafb', padding: '0.75rem', borderRadius: '6px' }}>
+                                            <strong>Evolución:</strong> {consulta.evolucion || '-'}<br/><br/>
+                                            <strong>Indicaciones:</strong> {consulta.indicaciones || '-'}
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                {consulta.receta && (
+                                    <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px dashed #e5e7eb' }}>
+                                        <h4 style={{ margin: '0 0 0.75rem 0', color: '#033323', fontSize: '1rem' }}>💊 Receta Emitida</h4>
+                                        <div style={{ backgroundColor: '#f0fdf4', padding: '1rem', borderRadius: '8px', border: '1px solid #bbf7d0' }}>
+                                            {consulta.receta.medicamentos && consulta.receta.medicamentos.length > 0 ? (
+                                                <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#065f46', fontSize: '0.9rem' }}>
+                                                    {consulta.receta.medicamentos.map(m => (
+                                                        <li key={m.id || Math.random()} style={{ marginBottom: '0.5rem' }}>
+                                                            <strong>{m.medicamento}</strong> - {m.dosis} | {m.frecuencia} por {m.duracion} (Cantidad: {m.cantidad})
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            ) : (
+                                                <p style={{ margin: 0, color: '#065f46', fontSize: '0.9rem' }}>Receta sin medicamentos detallados.</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         );
     }
 
     return (
-        <div>
-            {/* Encabezado */}
+        <div className={styles.container}>
             <div style={{ marginBottom: '1.5rem' }}>
-                <h1 style={{ margin: 0, fontSize: 'clamp(1.2rem, 3vw, 1.6rem)', color: '#033323', fontWeight: 700 }}>Mis Pacientes</h1>
-                <p style={{ margin: '0.25rem 0 0', color: '#6b7280', fontSize: '0.9rem' }}>
-                    {pacientes.length} paciente{pacientes.length !== 1 ? 's' : ''} encontrado{pacientes.length !== 1 ? 's' : ''}
+                <h1 className={styles.title}>Historial de Pacientes Atendidos</h1>
+                <p className={styles.subtitle}>
+                    {pacientesAtendidos.length} paciente{pacientesAtendidos.length !== 1 ? 's' : ''} en su historial
                 </p>
             </div>
 
-            {/* Buscador */}
-            <div style={{ marginBottom: '1.25rem' }}>
+            <div className={styles.tableContainer} style={{ padding: '1rem' }}>
                 <input
                     type="text"
-                    placeholder="🔍  Buscar por nombre o DNI..."
+                    placeholder="Buscar paciente por nombre o DNI..."
                     value={busqueda}
-                    onChange={e => setBusqueda(e.target.value)}
-                    style={{ width: '100%', maxWidth: '400px', padding: '0.65rem 1rem', border: '1px solid #d1d5db', borderRadius: '8px', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' }}
+                    onChange={(e) => setBusqueda(e.target.value)}
+                    className={styles.input}
+                    style={{ marginBottom: '1rem' }}
                 />
-            </div>
 
-            {/* Tabla */}
-            <div style={{ background: '#ffffff', borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
-                <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                <div className={styles.tableWrapper}>
+                    <table className={styles.table}>
                         <thead>
-                            <tr style={{ background: '#f9fafb', borderBottom: '2px solid #e5e7eb' }}>
-                                <th style={{ padding: '0.85rem 1rem', textAlign: 'left', color: '#6b7280', fontWeight: 600, whiteSpace: 'nowrap' }}>Paciente</th>
-                                <th style={{ padding: '0.85rem 1rem', textAlign: 'left', color: '#6b7280', fontWeight: 600, whiteSpace: 'nowrap' }}>DNI</th>
-                                <th style={{ padding: '0.85rem 1rem', textAlign: 'left', color: '#6b7280', fontWeight: 600, whiteSpace: 'nowrap' }}>Edad / Sexo</th>
-                                <th style={{ padding: '0.85rem 1rem', textAlign: 'left', color: '#6b7280', fontWeight: 600, whiteSpace: 'nowrap' }}>Seguro</th>
-                                <th style={{ padding: '0.85rem 1rem', textAlign: 'center', color: '#6b7280', fontWeight: 600 }}>Acción</th>
+                            <tr>
+                                <th className={styles.th}>Paciente</th>
+                                <th className={styles.th}>DNI</th>
+                                <th className={styles.th}>Edad/Sexo</th>
+                                <th className={styles.th}>Contacto</th>
+                                <th className={styles.th} style={{ textAlign: 'center' }}>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan="5" style={{ padding: '3rem', textAlign: 'center', color: '#9ca3af' }}>⏳ Cargando pacientes...</td></tr>
-                            ) : pacientes.length === 0 ? (
-                                <tr><td colSpan="5" style={{ padding: '3rem', textAlign: 'center', color: '#9ca3af' }}>No se encontraron pacientes.</td></tr>
+                                <tr><td colSpan="5" className={styles.td} style={{ textAlign: 'center' }}>⏳ Cargando pacientes...</td></tr>
+                            ) : pacientesAtendidos.length === 0 ? (
+                                <tr><td colSpan="5" className={styles.td} style={{ textAlign: 'center' }}>No hay pacientes en su historial de atendidos.</td></tr>
                             ) : (
-                                pacientes.map((p) => {
+                                pacientesAtendidos.map((p) => {
                                     const nombre = p.nombreCompleto || `${p.nombres || ''} ${p.apellidoPaterno || ''}`.trim();
                                     const edad = p.edad ?? (p.fechaNacimiento ? calcularEdad(p.fechaNacimiento) : '-');
                                     const sexo = p.sexo === 'M' ? 'Masc.' : p.sexo === 'F' ? 'Fem.' : (p.sexo || '-');
+                                    
                                     return (
-                                        <tr key={p.codPaciente} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                                            <td style={{ padding: '0.9rem 1rem', fontWeight: 600, color: '#111827' }}>{nombre}</td>
-                                            <td style={{ padding: '0.9rem 1rem', fontFamily: 'monospace', color: '#374151' }}>{p.dni}</td>
-                                            <td style={{ padding: '0.9rem 1rem', color: '#374151' }}>{edad} / {sexo}</td>
-                                            <td style={{ padding: '0.9rem 1rem', color: '#374151' }}>{p.tipoSeguroNombre || '-'}</td>
-                                            <td style={{ padding: '0.9rem 1rem', textAlign: 'center' }}>
+                                        <tr key={p.codPaciente}>
+                                            <td className={styles.td} style={{ fontWeight: 600 }}>{nombre}</td>
+                                            <td className={styles.td}>{p.dni}</td>
+                                            <td className={styles.td}>{edad} años / {sexo}</td>
+                                            <td className={styles.td}>{p.telefono || p.email || '-'}</td>
+                                            <td className={styles.td} style={{ textAlign: 'center' }}>
                                                 <button
-                                                    onClick={() => setPacienteSeleccionado(p.codPaciente)}
-                                                    style={{ background: '#0d9488', color: '#fff', border: 'none', padding: '0.4rem 1rem', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '0.82rem', whiteSpace: 'nowrap' }}
+                                                    onClick={() => cargarHistorial(p)}
+                                                    className={styles.btnAction}
                                                 >
-                                                    Ver expediente
+                                                    Ver
                                                 </button>
                                             </td>
                                         </tr>
@@ -83,122 +196,6 @@ export default function PacienteMedico({ user }) {
                             )}
                         </tbody>
                     </table>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-function calcularEdad(fechaNacimiento) {
-    const hoy = new Date();
-    const nac = new Date(fechaNacimiento);
-    let edad = hoy.getFullYear() - nac.getFullYear();
-    if (hoy.getMonth() < nac.getMonth() || (hoy.getMonth() === nac.getMonth() && hoy.getDate() < nac.getDate())) edad--;
-    return edad;
-}
-
-// Componente inline para ver el expediente completo
-function DetallesPaciente({ pacienteId, token }) {
-    const [data, setData] = React.useState(null);
-    const [loading, setLoading] = React.useState(true);
-
-    React.useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const res = await fetch(`http://localhost:8080/api/pacientes/${pacienteId}/expediente`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                if (!res.ok) throw new Error();
-                setData(await res.json());
-            } catch {
-                setData(null);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchData();
-    }, [pacienteId, token]);
-
-    if (loading) return <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>⏳ Cargando expediente...</div>;
-    if (!data) return <div style={{ textAlign: 'center', padding: '3rem', color: '#dc2626' }}>⚠️ No se pudo cargar el expediente.</div>;
-
-    const iniciales = data.nombreCompleto?.split(' ').map(n => n[0]).slice(0, 2).join('') || 'PT';
-
-    return (
-        <div style={{ maxWidth: '1000px' }}>
-            {/* Cabecera */}
-            <div style={{ background: '#fff', borderRadius: '12px', padding: '1.5rem', border: '1px solid #e5e7eb', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{ width: 50, height: 50, borderRadius: '50%', background: '#ecfdf5', color: '#065f46', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '1.1rem', flexShrink: 0 }}>
-                        {iniciales}
-                    </div>
-                    <div>
-                        <h2 style={{ margin: 0, fontSize: '1.2rem', color: '#111827', fontWeight: 700 }}>{data.nombreCompleto}</h2>
-                        <p style={{ margin: '0.15rem 0 0', fontSize: '0.82rem', color: '#6b7280' }}>
-                            DNI {data.dni} · {data.edad} años · {data.sexo === 'M' ? 'Masculino' : 'Femenino'} · {data.tipoSeguroNombre}
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            {/* Alerta alergia */}
-            {data.alergias && !['ninguna', 'ninguna registrada', 'ninguna conocida'].includes(data.alergias.toLowerCase()) && (
-                <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderLeft: '4px solid #dc2626', padding: '0.85rem 1rem', borderRadius: '8px', marginBottom: '1rem', color: '#b91c1c', fontSize: '0.9rem' }}>
-                    <strong>⚠️ Alergias:</strong> {data.alergias}
-                </div>
-            )}
-
-            {/* Grid de datos */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
-                {/* Datos personales */}
-                <div style={{ background: '#fff', borderRadius: '12px', padding: '1.25rem', border: '1px solid #e5e7eb' }}>
-                    <h3 style={{ margin: '0 0 1rem', fontSize: '0.9rem', fontWeight: 700, color: '#033323', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Datos personales</h3>
-                    {[
-                        ['Fecha de nac.', data.fechaNacimiento],
-                        ['Teléfono', data.telefono || 'No registrado'],
-                        ['Seguro', `${data.tipoSeguroNombre} ${data.numSeguro ? '- '+data.numSeguro : ''}`],
-                        ['Contacto emerg.', data.contactoEmergencia || 'No registrado'],
-                        ['Tel. emergencia', data.telEmergencia || '-'],
-                    ].map(([label, val]) => (
-                        <div key={label} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.6rem 0', borderBottom: '1px solid #f3f4f6', fontSize: '0.87rem', gap: '1rem' }}>
-                            <span style={{ color: '#6b7280', flexShrink: 0 }}>{label}</span>
-                            <span style={{ color: '#111827', fontWeight: 500, textAlign: 'right' }}>{val}</span>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Antecedentes */}
-                <div style={{ background: '#fff', borderRadius: '12px', padding: '1.25rem', border: '1px solid #e5e7eb' }}>
-                    <h3 style={{ margin: '0 0 1rem', fontSize: '0.9rem', fontWeight: 700, color: '#033323', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Antecedentes</h3>
-                    {[
-                        ['Enf. crónicas', data.enfCronicas],
-                        ['Medicación', data.medicacionHabitual],
-                        ['Cirugías', data.cirugias],
-                        ['Última PA', data.ultimaPA],
-                        ['Frec. cardíaca', data.ultimaFrecuenciaCardiaca],
-                        ['Sat. O₂', data.ultimaSaturacionO2],
-                    ].map(([label, val]) => (
-                        <div key={label} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.6rem 0', borderBottom: '1px solid #f3f4f6', fontSize: '0.87rem', gap: '1rem' }}>
-                            <span style={{ color: '#6b7280', flexShrink: 0 }}>{label}</span>
-                            <span style={{ color: '#111827', fontWeight: 500, textAlign: 'right' }}>{val || '-'}</span>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Acciones rápidas */}
-                <div style={{ background: '#fff', borderRadius: '12px', padding: '1.25rem', border: '1px solid #e5e7eb' }}>
-                    <h3 style={{ margin: '0 0 1rem', fontSize: '0.9rem', fontWeight: 700, color: '#033323', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Acciones rápidas</h3>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                        <button style={{ padding: '0.7rem', background: '#0d9488', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }}>
-                            📋 Historia clínica
-                        </button>
-                        <button style={{ padding: '0.7rem', background: '#033323', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }}>
-                            💊 Emitir receta
-                        </button>
-                        <button style={{ padding: '0.7rem', background: '#fff', color: '#374151', border: '1px solid #e5e7eb', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }}>
-                            🧪 Solicitar examen
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>

@@ -1,5 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Box, Typography, Card, TextField, Button, Alert, Avatar, Switch, InputAdornment, IconButton } from '@mui/material';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 const API = 'http://localhost:8080';
 
@@ -18,10 +22,13 @@ export default function PerfilMedico({ user }) {
     useEffect(() => {
         if (!user?.accessToken) return;
         const partes = (user.nombreCompleto || '').split(' ');
+        const nombre = partes[0] || '';
+        const apellidos = partes.slice(1).join(' ') || '';
         setPerfil({
-            nombre:    partes[0] || '',
-            apellidos: partes.slice(1).join(' ') || '',
+            nombre,
+            apellidos
         });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         setLoading(false);
     }, [user]);
 
@@ -47,9 +54,9 @@ export default function PerfilMedico({ user }) {
                 ...session,
                 nombreCompleto: res.data.nombreCompleto,
             }));
-            setMsgPerfil({ ok: true, txt: '✅ Nombre actualizado correctamente.' });
+            setMsgPerfil({ ok: true, txt: 'Información personal actualizada correctamente.' });
         } catch {
-            setMsgPerfil({ ok: false, txt: '⚠️ No se pudo guardar. Verifica la conexión.' });
+            setMsgPerfil({ ok: false, txt: 'No se pudo guardar. Verifica tu conexión.' });
         } finally {
             setGuardando(false);
         }
@@ -58,11 +65,11 @@ export default function PerfilMedico({ user }) {
     const handleCambiarPwd = async (e) => {
         e.preventDefault();
         if (pwd.passwordNueva !== pwd.confirmar) {
-            setMsgPwd({ ok: false, txt: '⚠️ Las contraseñas nuevas no coinciden.' });
+            setMsgPwd({ ok: false, txt: 'Las nuevas contraseñas no coinciden.' });
             return;
         }
         if (pwd.passwordNueva.length < 6) {
-            setMsgPwd({ ok: false, txt: '⚠️ La nueva contraseña debe tener mínimo 6 caracteres.' });
+            setMsgPwd({ ok: false, txt: 'La contraseña debe tener al menos 6 caracteres.' });
             return;
         }
         setCambiando(true);
@@ -71,11 +78,11 @@ export default function PerfilMedico({ user }) {
                 passwordActual: pwd.passwordActual,
                 passwordNueva:  pwd.passwordNueva,
             }, { headers: { Authorization: `Bearer ${user?.accessToken}` } });
-            setMsgPwd({ ok: true, txt: '✅ Contraseña cambiada exitosamente.' });
+            setMsgPwd({ ok: true, txt: 'Contraseña cambiada exitosamente.' });
             setPwd({ passwordActual: '', passwordNueva: '', confirmar: '' });
         } catch (err) {
-            const msg = err.response?.data?.error || 'Error al cambiar la contraseña.';
-            setMsgPwd({ ok: false, txt: `⚠️ ${msg}` });
+            const msg = err.response?.data?.error || 'Error cambiando la contraseña.';
+            setMsgPwd({ ok: false, txt: msg });
         } finally {
             setCambiando(false);
         }
@@ -83,169 +90,222 @@ export default function PerfilMedico({ user }) {
 
     const iniciales = `${perfil.nombre[0] || ''}${perfil.apellidos[0] || ''}`.toUpperCase() || 'DR';
 
-    if (loading) return <div style={{ padding: '3rem', textAlign: 'center', color: '#6b7280' }}>Cargando...</div>;
+    if (loading) {
+        return <Box sx={{ p: 4, textAlign: 'center', color: '#64748b' }}>Cargando perfil...</Box>;
+    }
+
+    // Light Theme Styles
+    const lightTheme = {
+        bg: '#f8fafc',
+        cardBg: '#ffffff',
+        border: '#e2e8f0',
+        textMain: '#0f172a',
+        textMuted: '#64748b',
+        inputBg: '#ffffff',
+        btnBg: '#f1f5f9',
+        btnHover: '#e2e8f0',
+        primary: '#3b82f6',
+        error: '#ef4444'
+    };
+
+    const inputStyles = {
+        '& .MuiOutlinedInput-root': {
+            backgroundColor: lightTheme.inputBg,
+            color: lightTheme.textMain,
+            borderRadius: 1.5,
+            '& fieldset': { borderColor: lightTheme.border },
+            '&:hover fieldset': { borderColor: '#cbd5e1' },
+            '&.Mui-focused fieldset': { borderColor: lightTheme.primary },
+        },
+        '& .MuiInputBase-input': {
+            padding: '8px 12px',
+            fontSize: '0.9rem'
+        }
+    };
+
+    const labelStyles = {
+        color: lightTheme.textMain,
+        fontWeight: 600,
+        fontSize: '0.9rem',
+        mb: 1,
+        display: 'block'
+    };
 
     return (
-        <div style={{ maxWidth: '560px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <Box sx={{ bgcolor: lightTheme.bg, minHeight: '100%', borderRadius: 3, p: { xs: 2, md: 5 }, color: lightTheme.textMain }}>
+            <Box sx={{ maxWidth: 800, mx: 'auto' }}>
+                <Typography variant="h4" sx={{ fontWeight: 800, mb: 3, color: lightTheme.textMain, borderBottom: `1px solid ${lightTheme.border}`, pb: 2 }}>
+                    Ajustes de Perfil (Médico)
+                </Typography>
 
-            <h1 style={{ margin: 0, fontSize: 'clamp(1.2rem,3vw,1.5rem)', color: '#033323', fontWeight: 700 }}>
-                Mi Perfil
-            </h1>
+                <Box sx={{ mb: 4, p: 2, border: `1px solid rgba(245, 158, 11, 0.4)`, borderRadius: 2, bgcolor: 'rgba(245, 158, 11, 0.05)', display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                    <WarningAmberIcon sx={{ color: '#f59e0b' }} />
+                    <Typography variant="body2" sx={{ color: lightTheme.textMain }}>
+                        Estás viendo tu perfil como miembro del Personal Médico. Mantén tu información actualizada para los registros oficiales del Hospital CAM Pucallpa.
+                    </Typography>
+                </Box>
 
-            {/* ── AVATAR ── */}
-            <div style={{ ...card, display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-                <div style={avatarStyle}>{iniciales}</div>
-                <div>
-                    <p style={{ margin: 0, fontWeight: 700, fontSize: '1.1rem', color: '#111827' }}>
-                        {perfil.nombre} {perfil.apellidos}
-                    </p>
-                    <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: '#6b7280' }}>
-                        🩺 Médico · CAM Pucallpa
-                    </p>
-                </div>
-            </div>
+                {/* Avatar Section */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mb: 4, p: 3, border: `1px solid ${lightTheme.border}`, borderRadius: 2, bgcolor: lightTheme.cardBg, boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
+                    <Avatar sx={{ width: 80, height: 80, bgcolor: lightTheme.primary, fontSize: '2rem', fontWeight: 600 }}>
+                        {iniciales}
+                    </Avatar>
+                    <Box>
+                        <Typography variant="h5" sx={{ fontWeight: 700, color: lightTheme.textMain }}>{perfil.nombre} {perfil.apellidos}</Typography>
+                        <Typography variant="body2" sx={{ color: lightTheme.textMuted }}>Médico • CAM Pucallpa</Typography>
+                    </Box>
+                </Box>
 
-            {/* ── DATOS PERSONALES ── */}
-            <div style={card}>
-                <h3 style={secTitle}>Datos personales</h3>
-                {msgPerfil && <Alert ok={msgPerfil.ok} txt={msgPerfil.txt} />}
-                <form onSubmit={handleGuardar}>
-                    {/* DNI — solo lectura */}
-                    <div style={{ marginBottom: '1rem' }}>
-                        <label style={labelSt}>
-                            DNI <span style={{ color: '#9ca3af', fontWeight: 400, fontSize: '0.78rem' }}>(no editable)</span>
-                        </label>
-                        <div style={dniBox}>{dni}</div>
-                    </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px,1fr))', gap: '1rem', marginBottom: '1.25rem' }}>
-                        <div>
-                            <label style={labelSt}>Nombre(s)</label>
-                            <input
-                                name="nombre"
-                                value={perfil.nombre}
-                                onChange={handlePerfil}
-                                placeholder="Tu nombre"
-                                style={inputSt}
+                {/* Personal Information */}
+                <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: lightTheme.textMain }}>Información Personal</Typography>
+                <Card sx={{ bgcolor: lightTheme.cardBg, border: `1px solid ${lightTheme.border}`, borderRadius: 2, mb: 4, boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
+                    {msgPerfil && (
+                        <Alert severity={msgPerfil.ok ? "success" : "error"} sx={{ m: 2 }}>
+                            {msgPerfil.txt}
+                        </Alert>
+                    )}
+                    <Box component="form" onSubmit={handleGuardar} sx={{ p: 3 }}>
+                        <Box sx={{ mb: 3 }}>
+                            <Typography component="label" sx={labelStyles}>DNI (Documento Nacional de Identidad)</Typography>
+                            <Typography variant="body2" sx={{ color: lightTheme.textMuted, mb: 1 }}>
+                                Este ID se usa para iniciar sesión en el sistema y no puede ser modificado.
+                            </Typography>
+                            <TextField 
+                                fullWidth 
+                                value={dni} 
+                                disabled 
+                                sx={{ ...inputStyles, '& .Mui-disabled': { WebkitTextFillColor: lightTheme.textMuted, bgcolor: '#f1f5f9' } }} 
                             />
-                        </div>
-                        <div>
-                            <label style={labelSt}>Apellidos</label>
-                            <input
-                                name="apellidos"
-                                value={perfil.apellidos}
-                                onChange={handlePerfil}
-                                placeholder="Tus apellidos"
-                                style={inputSt}
+                        </Box>
+
+                        <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', mb: 3 }}>
+                            <Box sx={{ flex: 1, minWidth: 200 }}>
+                                <Typography component="label" sx={labelStyles}>Nombre(s)</Typography>
+                                <TextField 
+                                    fullWidth 
+                                    name="nombre" 
+                                    value={perfil.nombre} 
+                                    onChange={handlePerfil} 
+                                    sx={inputStyles} 
+                                />
+                            </Box>
+                            <Box sx={{ flex: 1, minWidth: 200 }}>
+                                <Typography component="label" sx={labelStyles}>Apellidos</Typography>
+                                <TextField 
+                                    fullWidth 
+                                    name="apellidos" 
+                                    value={perfil.apellidos} 
+                                    onChange={handlePerfil} 
+                                    sx={inputStyles} 
+                                />
+                            </Box>
+                        </Box>
+
+                        <Button type="submit" disabled={guardando} variant="contained" sx={{ bgcolor: '#10b981', color: '#fff', textTransform: 'none', fontWeight: 600, px: 3, '&:hover': { bgcolor: '#059669' }, '&.Mui-disabled': { bgcolor: 'rgba(16, 185, 129, 0.5)', color: 'rgba(255,255,255,0.5)' } }}>
+                            {guardando ? 'Guardando...' : 'Guardar perfil'}
+                        </Button>
+                    </Box>
+                </Card>
+
+                {/* Privacy Toggle Section */}
+                <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: lightTheme.textMain }}>Privacidad y Seguridad</Typography>
+                <Card sx={{ bgcolor: lightTheme.cardBg, border: `1px solid ${lightTheme.border}`, borderRadius: 2, mb: 4, boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
+                    <Box sx={{ p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${lightTheme.border}` }}>
+                        <Box pr={4}>
+                            <Typography sx={{ fontWeight: 600, color: lightTheme.textMain }}>Mantener mis datos de contacto privados</Typography>
+                            <Typography variant="body2" sx={{ color: lightTheme.textMuted, mt: 0.5 }}>
+                                Removeremos tu perfil del directorio público del hospital. Solo los administradores podrán ver tu número de contacto.
+                            </Typography>
+                        </Box>
+                        <Switch defaultChecked color="primary" />
+                    </Box>
+                    <Box sx={{ p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Box pr={4}>
+                            <Typography sx={{ fontWeight: 600, color: lightTheme.textMain }}>Bloquear notificaciones administrativas</Typography>
+                            <Typography variant="body2" sx={{ color: lightTheme.textMuted, mt: 0.5 }}>
+                                Cuando activas esto, no recibirás los anuncios masivos por parte de la administración. (No recomendado)
+                            </Typography>
+                        </Box>
+                        <Switch color="primary" />
+                    </Box>
+                </Card>
+
+                {/* Change Password */}
+                <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: lightTheme.textMain }}>Seguridad de cuenta</Typography>
+                <Card sx={{ bgcolor: lightTheme.cardBg, border: `1px solid ${lightTheme.border}`, borderRadius: 2, mb: 4, boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
+                    {msgPwd && (
+                        <Alert severity={msgPwd.ok ? "success" : "error"} sx={{ m: 2 }}>
+                            {msgPwd.txt}
+                        </Alert>
+                    )}
+                    <Box component="form" onSubmit={handleCambiarPwd} sx={{ p: 3 }}>
+                        <Box sx={{ mb: 3 }}>
+                            <Typography component="label" sx={labelStyles}>Contraseña actual</Typography>
+                            <TextField 
+                                fullWidth 
+                                type={showPwd.actual ? 'text' : 'password'}
+                                name="passwordActual" 
+                                value={pwd.passwordActual} 
+                                onChange={handlePwd} 
+                                sx={inputStyles}
+                                InputProps={{
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton onClick={() => setShowPwd({...showPwd, actual: !showPwd.actual})} edge="end" sx={{ color: lightTheme.textMuted }}>
+                                                {showPwd.actual ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    )
+                                }}
                             />
-                        </div>
-                    </div>
+                        </Box>
+                        <Box sx={{ mb: 3 }}>
+                            <Typography component="label" sx={labelStyles}>Nueva contraseña</Typography>
+                            <TextField 
+                                fullWidth 
+                                type={showPwd.nueva ? 'text' : 'password'}
+                                name="passwordNueva" 
+                                value={pwd.passwordNueva} 
+                                onChange={handlePwd} 
+                                sx={inputStyles}
+                                InputProps={{
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton onClick={() => setShowPwd({...showPwd, nueva: !showPwd.nueva})} edge="end" sx={{ color: lightTheme.textMuted }}>
+                                                {showPwd.nueva ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    )
+                                }}
+                            />
+                        </Box>
+                        <Box sx={{ mb: 4 }}>
+                            <Typography component="label" sx={labelStyles}>Confirmar nueva contraseña</Typography>
+                            <TextField 
+                                fullWidth 
+                                type={showPwd.confirmar ? 'text' : 'password'}
+                                name="confirmar" 
+                                value={pwd.confirmar} 
+                                onChange={handlePwd} 
+                                sx={inputStyles}
+                                InputProps={{
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton onClick={() => setShowPwd({...showPwd, confirmar: !showPwd.confirmar})} edge="end" sx={{ color: lightTheme.textMuted }}>
+                                                {showPwd.confirmar ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    )
+                                }}
+                            />
+                        </Box>
+                        <Button type="submit" disabled={cambiando} sx={{ bgcolor: lightTheme.btnBg, border: `1px solid ${lightTheme.border}`, color: lightTheme.textMain, textTransform: 'none', fontWeight: 600, px: 3, '&:hover': { bgcolor: lightTheme.btnHover }, '&.Mui-disabled': { color: 'rgba(0,0,0,0.3)' } }}>
+                            {cambiando ? 'Actualizando...' : 'Cambiar contraseña'}
+                        </Button>
+                    </Box>
+                </Card>
 
-                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <button type="submit" disabled={guardando} style={btnPrimary(guardando)}>
-                            {guardando ? '⏳ Guardando...' : '💾 Guardar cambios'}
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            {/* ── CAMBIAR CONTRASEÑA ── */}
-            <div style={card}>
-                <h3 style={secTitle}>🔐 Cambiar contraseña</h3>
-                {msgPwd && <Alert ok={msgPwd.ok} txt={msgPwd.txt} />}
-                <form onSubmit={handleCambiarPwd}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.25rem' }}>
-                        <PwdField
-                            label="Contraseña actual"
-                            name="passwordActual"
-                            value={pwd.passwordActual}
-                            show={showPwd.actual}
-                            onToggle={() => setShowPwd(p => ({ ...p, actual: !p.actual }))}
-                            onChange={handlePwd}
-                            placeholder="Tu contraseña actual"
-                        />
-                        <PwdField
-                            label="Nueva contraseña"
-                            name="passwordNueva"
-                            value={pwd.passwordNueva}
-                            show={showPwd.nueva}
-                            onToggle={() => setShowPwd(p => ({ ...p, nueva: !p.nueva }))}
-                            onChange={handlePwd}
-                            placeholder="Mínimo 6 caracteres"
-                        />
-                        <PwdField
-                            label="Confirmar nueva contraseña"
-                            name="confirmar"
-                            value={pwd.confirmar}
-                            show={showPwd.confirmar}
-                            onToggle={() => setShowPwd(p => ({ ...p, confirmar: !p.confirmar }))}
-                            onChange={handlePwd}
-                            placeholder="Repite la nueva contraseña"
-                        />
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <button type="submit" disabled={cambiando} style={btnDanger(cambiando)}>
-                            {cambiando ? '⏳ Cambiando...' : '🔑 Cambiar contraseña'}
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-        </div>
+            </Box>
+        </Box>
     );
 }
-
-// ── Sub-componentes ──────────────────────────────────────────
-function PwdField({ label, name, value, show, onToggle, onChange, placeholder }) {
-    return (
-        <div>
-            <label style={labelSt}>{label}</label>
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                <input
-                    name={name}
-                    type={show ? 'text' : 'password'}
-                    value={value}
-                    onChange={onChange}
-                    placeholder={placeholder}
-                    required
-                    style={{ ...inputSt, paddingRight: '2.8rem' }}
-                />
-                <button
-                    type="button"
-                    onClick={onToggle}
-                    title={show ? 'Ocultar' : 'Mostrar'}
-                    style={eyeBtn}
-                >
-                    {show
-                        ? <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                        : <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                    }
-                </button>
-            </div>
-        </div>
-    );
-}
-
-function Alert({ ok, txt }) {
-    return (
-        <div style={{
-            padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.88rem',
-            background: ok ? '#f0fdf4' : '#fef2f2',
-            color:      ok ? '#065f46' : '#b91c1c',
-            border:     `1px solid ${ok ? '#bbf7d0' : '#fecaca'}`
-        }}>
-            {txt}
-        </div>
-    );
-}
-
-// ── Estilos ──────────────────────────────────────────────────
-const card     = { background: '#fff', borderRadius: '14px', padding: '1.75rem', border: '1px solid #e5e7eb', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' };
-const secTitle = { margin: '0 0 1.25rem', fontSize: '1rem', fontWeight: 700, color: '#033323' };
-const labelSt  = { display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#374151', marginBottom: '0.4rem' };
-const inputSt  = { width: '100%', padding: '0.65rem 0.9rem', border: '1px solid #d1d5db', borderRadius: '8px', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box', color: '#111827', transition: 'border-color 0.2s' };
-const dniBox   = { padding: '0.65rem 0.9rem', border: '1px solid #e5e7eb', borderRadius: '8px', fontSize: '0.9rem', background: '#f9fafb', color: '#6b7280', fontFamily: 'monospace', letterSpacing: '0.08em' };
-const eyeBtn   = { position: 'absolute', right: '10px', background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280', display: 'flex', alignItems: 'center', padding: '4px' };
-const avatarStyle = { width: 64, height: 64, borderRadius: '50%', flexShrink: 0, background: 'linear-gradient(135deg,#033323,#0d9488)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: 800 };
-const btnPrimary = d => ({ background: d ? '#9ca3af' : '#033323', color: '#fff', border: 'none', padding: '0.65rem 1.75rem', borderRadius: '8px', cursor: d ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '0.9rem', transition: 'background 0.2s' });
-const btnDanger  = d => ({ background: d ? '#9ca3af' : '#991b1b', color: '#fff', border: 'none', padding: '0.65rem 1.75rem', borderRadius: '8px', cursor: d ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '0.9rem', transition: 'background 0.2s' });

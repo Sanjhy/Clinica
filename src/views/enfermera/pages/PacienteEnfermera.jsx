@@ -20,6 +20,7 @@ export default function PacienteEnfermera({ user, onVerDatos, onHacerTriaje }) {
     const [form, setForm] = useState(formVacio());
     const [guardando, setGuardando] = useState(false);
     const [msg, setMsg] = useState(null);
+    const [errors, setErrors] = useState({});
 
     const cfg = { headers: { Authorization: `Bearer ${user?.accessToken}` } };
 
@@ -59,10 +60,64 @@ export default function PacienteEnfermera({ user, onVerDatos, onHacerTriaje }) {
             codTipoSeguro: p.codTipoSeguro || 1,
         });
         setModal('editar');
+        setErrors({});
+    };
+
+    const validarCampo = (name, value) => {
+        let errorMsg = "";
+        switch (name) {
+            case "nombres":
+                if (!value.trim()) errorMsg = "El nombre es obligatorio.";
+                else if (value.length < 2 || value.length > 50) errorMsg = "El nombre debe tener entre 2 y 50 caracteres.";
+                else if (/\d/.test(value)) errorMsg = "No se permiten números en el nombre.";
+                else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s\'-]+$/.test(value)) errorMsg = "El nombre contiene caracteres no permitidos.";
+                break;
+            case "apellidoPaterno":
+            case "apellidoMaterno":
+                if (!value.trim() && name === "apellidoPaterno") errorMsg = "Los apellidos son obligatorios.";
+                else if (value && /\d/.test(value)) errorMsg = "No se permiten números en los apellidos.";
+                else if (value && !/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s\'-]+$/.test(value)) errorMsg = "Los apellidos contienen caracteres inválidos.";
+                break;
+            case "dni":
+                if (!value.trim()) errorMsg = "El DNI es obligatorio.";
+                else if (/[^0-9]/.test(value)) errorMsg = "El DNI solo puede contener números.";
+                else if (value.length !== 8) errorMsg = "El DNI debe contener exactamente 8 dígitos.";
+                break;
+            case "telefono":
+                if (!value.trim()) errorMsg = "El número telefónico es obligatorio.";
+                else if (/[^0-9]/.test(value)) errorMsg = "Solo se permiten números.";
+                else if (value.length !== 9) errorMsg = "El teléfono debe contener 9 dígitos.";
+                break;
+            default: break;
+        }
+        setErrors(prev => ({ ...prev, [name]: errorMsg }));
+        return errorMsg === "";
+    };
+
+    const handleChangeForm = (e) => {
+        let { name, value } = e.target;
+        if (name === 'dni' || name === 'telefono') {
+            value = value.replace(/[^0-9]/g, '');
+        }
+        setForm(f => ({ ...f, [name]: value }));
+        validarCampo(name, value);
     };
 
     const handleGuardar = async (e) => {
         e.preventDefault();
+
+        const camposValidos = ['dni', 'nombres', 'apellidoPaterno', 'telefono'];
+        let hasErrors = false;
+        camposValidos.forEach(c => {
+            if (!validarCampo(c, form[c])) hasErrors = true;
+        });
+        if (form.apellidoMaterno && !validarCampo('apellidoMaterno', form.apellidoMaterno)) hasErrors = true;
+
+        if (hasErrors) {
+            setMsg({ ok: false, txt: '❌ Existen campos obligatorios sin completar o inválidos.' });
+            return;
+        }
+
         setGuardando(true);
         try {
             if (modal === 'nuevo') {
@@ -170,11 +225,11 @@ export default function PacienteEnfermera({ user, onVerDatos, onHacerTriaje }) {
                         </div>
                         <form onSubmit={handleGuardar}>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: '1rem', marginBottom: '1.25rem' }}>
-                                <FormField label="DNI" name="dni" value={form.dni} onChange={e => setForm(f => ({ ...f, [e.target.name]: e.target.value }))} placeholder="8 dígitos" required maxLength={8} disabled={modal === 'editar'} />
-                                <FormField label="Nombre(s)" name="nombres" value={form.nombres} onChange={e => setForm(f => ({ ...f, [e.target.name]: e.target.value }))} placeholder="Nombres" required />
-                                <FormField label="Apellido Paterno" name="apellidoPaterno" value={form.apellidoPaterno} onChange={e => setForm(f => ({ ...f, [e.target.name]: e.target.value }))} placeholder="Apellido paterno" required />
-                                <FormField label="Apellido Materno" name="apellidoMaterno" value={form.apellidoMaterno} onChange={e => setForm(f => ({ ...f, [e.target.name]: e.target.value }))} placeholder="Apellido materno" />
-                                <FormField label="Fecha de Nacimiento" name="fechaNacimiento" type="date" value={form.fechaNacimiento} onChange={e => setForm(f => ({ ...f, [e.target.name]: e.target.value }))} required />
+                                <FormField label="DNI" name="dni" value={form.dni} onChange={handleChangeForm} placeholder="8 dígitos" required maxLength={8} disabled={modal === 'editar'} error={errors.dni} />
+                                <FormField label="Nombre(s)" name="nombres" value={form.nombres} onChange={handleChangeForm} placeholder="Nombres" required error={errors.nombres} />
+                                <FormField label="Apellido Paterno" name="apellidoPaterno" value={form.apellidoPaterno} onChange={handleChangeForm} placeholder="Apellido paterno" required error={errors.apellidoPaterno} />
+                                <FormField label="Apellido Materno" name="apellidoMaterno" value={form.apellidoMaterno} onChange={handleChangeForm} placeholder="Apellido materno" error={errors.apellidoMaterno} />
+                                <FormField label="Fecha de Nacimiento" name="fechaNacimiento" type="date" value={form.fechaNacimiento} onChange={handleChangeForm} required />
                                 <div>
                                     <label style={lblSt}>Sexo</label>
                                     <select name="sexo" value={form.sexo} onChange={e => setForm(f => ({ ...f, sexo: e.target.value }))} style={inputSt}>
@@ -182,7 +237,7 @@ export default function PacienteEnfermera({ user, onVerDatos, onHacerTriaje }) {
                                         <option value="M">Masculino</option>
                                     </select>
                                 </div>
-                                <FormField label="Teléfono" name="telefono" value={form.telefono} onChange={e => setForm(f => ({ ...f, [e.target.name]: e.target.value }))} placeholder="Ej: 987654321" />
+                                <FormField label="Teléfono" name="telefono" value={form.telefono} onChange={handleChangeForm} placeholder="Ej: 987654321" error={errors.telefono} />
                                 <div>
                                     <label style={lblSt}>Tipo de Seguro</label>
                                     <select name="codTipoSeguro" value={form.codTipoSeguro} onChange={e => setForm(f => ({ ...f, codTipoSeguro: parseInt(e.target.value) }))} style={inputSt}>
@@ -206,13 +261,28 @@ export default function PacienteEnfermera({ user, onVerDatos, onHacerTriaje }) {
     );
 }
 
-function FormField({ label, name, type = 'text', value, onChange, placeholder, required, maxLength, disabled }) {
+function FormField({ label, name, type = 'text', value, onChange, placeholder, required, maxLength, disabled, error }) {
+    
+    // Si no hay error y tiene valor, mostrar borde verde (éxito)
+    const isSuccess = !error && value && value.toString().trim() !== '';
+    const borderColor = error ? '#ef4444' : (isSuccess ? '#22c55e' : '#d1d5db');
+    const borderWidth = isSuccess || error ? '2px' : '1px';
+
     return (
         <div>
             <label style={lblSt}>{label}</label>
             <input name={name} type={type} value={value} onChange={onChange} placeholder={placeholder}
                 required={required} maxLength={maxLength} disabled={disabled}
-                style={{ ...inputSt, background: disabled ? '#f3f4f6' : '#fff', color: disabled ? '#6b7280' : '#111827', cursor: disabled ? 'not-allowed' : 'text' }} />
+                style={{ 
+                    ...inputSt, 
+                    background: disabled ? '#f3f4f6' : '#fff', 
+                    color: disabled ? '#6b7280' : '#111827', 
+                    cursor: disabled ? 'not-allowed' : 'text', 
+                    borderColor: borderColor,
+                    borderWidth: borderWidth,
+                    outlineColor: isSuccess ? '#22c55e' : undefined
+                }} />
+            {error && <span style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.25rem', display: 'block', fontWeight: 500 }}>{error}</span>}
         </div>
     );
 }

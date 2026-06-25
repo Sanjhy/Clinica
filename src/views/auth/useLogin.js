@@ -29,15 +29,17 @@ export function useLogin() {
             const data = response.data;
 
             // Guardamos la sesión en el navegador
-            localStorage.setItem('cam_user', JSON.stringify(data));
+            sessionStorage.setItem('cam_user', JSON.stringify(data));
 
             // Redirección inteligente según el rol que viene de la base de datos
             if (data.rol === 'MEDICO') {
                 navigate('/medico/dashboard');
-            } else if (data.rol === 'ADMIN_TI') {
+            } else if (data.rol === 'ADMINISTRATIVO') {
                 navigate('/admin/dashboard');
-            } else if (data.rol === 'ENFERMERA' || data.rol === 'ADMINISTRATIVO') {
+            } else if (data.rol === 'ENFERMERA') {
                 navigate('/asistencial/dashboard');
+            } else if (data.rol === 'ADMIN_TI') {
+                navigate('/ti/dashboard');
             } else {
                 setError('Rol no reconocido por el sistema de la clínica.');
             }

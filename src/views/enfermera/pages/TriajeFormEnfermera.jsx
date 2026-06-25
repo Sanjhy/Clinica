@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useTriajeForm } from '../hooks/useTriajeForm';
 
@@ -16,6 +16,7 @@ export default function TriajeFormEnfermera({ user, pacienteId, alTerminar }) {
     const [paciente, setPaciente]       = useState(null);
     const [medicos, setMedicos]         = useState([]);
     const [medicoSel, setMedicoSel]     = useState('');
+    const [filtroEsp, setFiltroEsp]     = useState('Todas');
     const [msg, setMsg]                 = useState(null);
     const [loadingData, setLoadingData] = useState(true);
 
@@ -82,17 +83,17 @@ export default function TriajeFormEnfermera({ user, pacienteId, alTerminar }) {
         setTimeout(() => alTerminar(), 1800);
     };
 
-    /* ─── Campo de entrada ─── */
-    const Campo = ({ label, name, placeholder, unit }) => (
-        <div>
+    // ── Campo de entrada Helper (Inline JSX para evitar perdida de foco) ──
+    const renderCampo = (label, name, placeholder, unit) => (
+        <div key={name}>
             <label style={lblSt}>
                 {label}
                 {unit && <span style={{ color: '#9ca3af', fontWeight: 400, fontSize: '0.77rem' }}> ({unit})</span>}
             </label>
             <input
-                type="number"
-                step="any"
-                value={form[name]}
+                type="text"
+                inputMode="decimal"
+                value={form[name] || ''}
                 onChange={e => setForm(f => ({ ...f, [name]: e.target.value }))}
                 placeholder={placeholder}
                 required
@@ -109,6 +110,9 @@ export default function TriajeFormEnfermera({ user, pacienteId, alTerminar }) {
             </div>
         </div>
     );
+
+    const especialidades = ['Todas', ...new Set(medicos.map(m => m.especialidad || 'General'))];
+    const medicosFiltrados = medicos.filter(m => filtroEsp === 'Todas' || (m.especialidad || 'General') === filtroEsp);
 
     return (
         <div style={{ maxWidth: '820px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -127,11 +131,11 @@ export default function TriajeFormEnfermera({ user, pacienteId, alTerminar }) {
             {paciente && (
                 <div style={{ background: 'linear-gradient(135deg,#f0fdf4,#dcfce7)', borderRadius: '12px', padding: '1.25rem', border: '1px solid #bbf7d0', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
                     <div style={avatarSt}>
-                        {(paciente.nombres?.[0] || '?').toUpperCase()}
+                        {(paciente.nombreCompleto?.[0] || '?').toUpperCase()}
                     </div>
                     <div>
                         <p style={{ margin: 0, fontWeight: 700, color: '#111827', fontSize: '1rem' }}>
-                            {paciente.apellidoPaterno} {paciente.apellidoMaterno}, {paciente.nombres}
+                            {paciente.nombreCompleto}
                         </p>
                         <p style={{ margin: '0.15rem 0 0', fontSize: '0.82rem', color: '#6b7280' }}>
                             DNI: {paciente.dni}
@@ -154,8 +158,8 @@ export default function TriajeFormEnfermera({ user, pacienteId, alTerminar }) {
                 <div style={card}>
                     <h3 style={secTitle}>❤️ Presión Arterial</h3>
                     <div style={grid2}>
-                        <Campo label="Sistólica" name="paSistolica" placeholder="Ej: 120" unit="mmHg" />
-                        <Campo label="Diastólica" name="paDiastolica" placeholder="Ej: 80" unit="mmHg" />
+                        {renderCampo("Sistólica", "paSistolica", "Ej: 120", "mmHg")}
+                        {renderCampo("Diastólica", "paDiastolica", "Ej: 80", "mmHg")}
                     </div>
                 </div>
 
@@ -163,9 +167,9 @@ export default function TriajeFormEnfermera({ user, pacienteId, alTerminar }) {
                 <div style={card}>
                     <h3 style={secTitle}>📊 Constantes Vitales</h3>
                     <div style={grid3}>
-                        <Campo label="Frec. Cardíaca" name="frecCardiaca" placeholder="Ej: 72" unit="bpm" />
-                        <Campo label="Temperatura" name="temperatura" placeholder="Ej: 36.5" unit="°C" />
-                        <Campo label="Saturación O₂" name="saturacionO2" placeholder="Ej: 98" unit="%" />
+                        {renderCampo("Frec. Cardíaca", "frecCardiaca", "Ej: 72", "bpm")}
+                        {renderCampo("Temperatura", "temperatura", "Ej: 36.5", "°C")}
+                        {renderCampo("Saturación O₂", "saturacionO2", "Ej: 98", "%")}
                     </div>
                 </div>
 
@@ -173,8 +177,8 @@ export default function TriajeFormEnfermera({ user, pacienteId, alTerminar }) {
                 <div style={card}>
                     <h3 style={secTitle}>⚖️ Antropometría</h3>
                     <div style={grid2}>
-                        <Campo label="Peso" name="pesoKg" placeholder="Ej: 70.5" unit="kg" />
-                        <Campo label="Talla" name="tallaCm" placeholder="Ej: 165" unit="cm" />
+                        {renderCampo("Peso", "pesoKg", "Ej: 70.5", "kg")}
+                        {renderCampo("Talla", "tallaCm", "Ej: 165", "cm")}
                     </div>
                 </div>
 
@@ -214,7 +218,26 @@ export default function TriajeFormEnfermera({ user, pacienteId, alTerminar }) {
                         </div>
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                            {medicos.map(m => (
+                            <div style={{ marginBottom: '0.5rem' }}>
+                                <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#374151', marginRight: '0.5rem' }}>Filtrar por Especialidad:</label>
+                                <select 
+                                    value={filtroEsp} 
+                                    onChange={(e) => { setFiltroEsp(e.target.value); setMedicoSel(''); }}
+                                    style={{ padding: '0.4rem 0.8rem', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '0.85rem' }}
+                                >
+                                    {especialidades.map(esp => (
+                                        <option key={esp} value={esp}>{esp}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            
+                            {medicosFiltrados.length === 0 && (
+                                <div style={{ padding: '1rem', background: '#f9fafb', borderRadius: '8px', color: '#6b7280', fontSize: '0.85rem', textAlign: 'center' }}>
+                                    No hay médicos disponibles para la especialidad seleccionada.
+                                </div>
+                            )}
+
+                            {medicosFiltrados.map(m => (
                                 <label
                                     key={m.codUsuario}
                                     style={{
@@ -250,8 +273,8 @@ export default function TriajeFormEnfermera({ user, pacienteId, alTerminar }) {
                                             Dr. {m.nombre} {m.apellidos}
                                         </p>
                                         <p style={{ margin: '0.1rem 0 0', fontSize: '0.78rem', color: '#6b7280' }}>
-                                            {m.colegiatura ? `CMP: ${m.colegiatura}` : 'Médico Asistencial'}
-                                            {' · DNI: '}{m.dni}
+                                            <strong>{m.especialidad || 'Medicina General'}</strong>
+                                            {m.colegiatura ? ` · CMP: ${m.colegiatura}` : ''}
                                         </p>
                                     </div>
                                     {/* Badge seleccionado */}
